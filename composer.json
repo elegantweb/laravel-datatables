@@ -1,0 +1,22 @@
+{
+    "name": "elegantweb/laravel-datatables",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sina Sharifzade",
+            "email": "sharifzadesina@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=7.0.0",
+        "laravel/framework": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elegant\\DataTables\\": "src/"
+        }
+    }
+}

@@ -51,8 +51,8 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
         return $this->toArray();
     }
 
-    public function toJson()
+    public function toJson($options = 0)
     {
-        return json_encode($this->toArray());
+        return json_encode($this->toArray(), $options);
     }
 }

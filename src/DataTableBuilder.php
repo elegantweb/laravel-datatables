@@ -27,9 +27,9 @@ class DataTableBuilder
     protected function search($search, $column)
     {
         if ($search['regex']) {
-            $this->source->where($column['name'], 'REGEX', $search['value']);
+            $this->source->where($column['data'], 'REGEX', $search['value']);
         } else {
-            $this->source->where($column['name'], 'LIKE', $search['value']);
+            $this->source->where($column['data'], 'LIKE', $search['value']);
         }
     }
 
@@ -55,7 +55,7 @@ class DataTableBuilder
     protected function sort($orders, $columns)
     {
         foreach ($orders as $order) {
-            $this->source->orderBy($columns[$order['column']]['name'], $order['dir']);
+            $this->source->orderBy($columns[$order['column']]['data'], $order['dir']);
         }
     }
 
@@ -67,11 +67,11 @@ class DataTableBuilder
     protected function compileValue($value, array $data)
     {
         if ($value instanceof Coluser) {
-            $value = $column['value'](...$data);
+            return $value(...$data);
         } elseif (view()->exists($column['value'])) {
-            $value = view($str, $data);
+            return view($value, $data);
         } else {
-            $value = $column['value'];
+            return $value;
         }
     }
 

@@ -4,7 +4,7 @@ namespace Elegant\DataTables;
 
 use Illuminate\Http\Request;
 
-class DataTableBuilder implements JsonSerializable, Jsonable, Arrayable
+class DataTableBuilder
 {
     protected $source;
     protected $request;

@@ -65,7 +65,7 @@ class DataTableBuilder
     protected function search($search, $column)
     {
         if ($search['regex']) {
-            $this->source->where($column['data'], 'REGEX', $search['value']);
+            $this->source->where($column['data'], 'REGEXP', $search['value']);
         } else {
             $this->source->where($column['data'], 'LIKE', $search['value']);
         }
@@ -201,6 +201,8 @@ class DataTableBuilder
 
     protected function registerSearch($search)
     {
+        $search['regex'] = filter_var($search['regex'], FILTER_VALIDATE_BOOLEAN);
+
         $this->search = $search;
     }
 

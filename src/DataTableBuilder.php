@@ -7,14 +7,18 @@ use Illuminate\Http\Request;
 class DataTableBuilder
 {
     protected $source;
-    protected $request;
+    protected $draw = 1;
+    protected $start = 0;
+    protected $length = 10;
+    protected $columns = [];
     protected $addonColumns = [];
+    protected $rawColumns = [];
+    protected $search;
+    protected $orders = [];
 
-    public function addSource($source)
+    public function __construct($source)
     {
         $this->source = $source;
-
-        return $this;
     }
 
     public function addColumn($name, $value)
@@ -22,6 +26,27 @@ class DataTableBuilder
         $this->addonColumns[] = ['name' => $name, 'value' => $value];
 
         return $this;
+    }
+
+    public function rawColumns(array $keys)
+    {
+        $this->rawColumns = $keys;
+
+        return $this;
+    }
+
+    protected function isColumnNeeded($key)
+    {
+        foreach ($this->columns as $column) {
+            if ($column['data'] === $key) {
+                return true;
+            }
+        }
+    }
+
+    protected function shouldEscapeColumn($key)
+    {
+        return !in_array($key, $this->rawColumns);
     }
 
     protected function search($search, $column)
@@ -33,57 +58,77 @@ class DataTableBuilder
         }
     }
 
-    protected function filter($search, $columns)
+    protected function filter()
     {
         // global filter
-        if ('' != $search['value']) {
-            foreach ($columns as $column) {
+        if ('' != $this->search['value']) {
+            foreach ($this->columns as $column) {
                 if ($column['searchable']) {
-                    $this->search($search, $column);
+                    $this->search($this->search, $column);
                 }
             }
         }
 
         // column specific filter
-        foreach ($columns as $column) {
-            if ('' != $search['value']) {
+        foreach ($this->columns as $column) {
+            if ('' != $column['search']['value']) {
                 $this->search($column['search'], $column);
             }
         }
     }
 
-    protected function sort($orders, $columns)
+    protected function sort()
     {
-        foreach ($orders as $order) {
-            $this->source->orderBy($columns[$order['column']]['data'], $order['dir']);
+        foreach ($this->orders as $order) {
+            $this->source->orderBy($this->columns[$order['column']]['data'], $order['dir']);
         }
     }
 
-    protected function paginate($start, $length)
+    protected function paginate()
     {
-        $this->source->offset($start)->limit($length);
-    }
-
-    protected function compileValue($value, array $data)
-    {
-        if ($value instanceof Coluser) {
-            return $value(...$data);
-        } elseif (view()->exists($column['value'])) {
-            return view($value, $data);
+        // Don't allow more than 100 records cause of security reasons
+        $diff = $this->length - $this->start;
+        if ($diff > 100) {
+            $this->source->offset($this->start)->limit($this->length - $diff);
         } else {
-            return $value;
+            $this->source->offset($this->start)->limit($this->length);
         }
     }
 
     protected function setupSourceColumns(&$row, $model)
     {
-        $row = $model->toArray() + $row;
+        $sourceColumns = array_dot($model->toArray());
+
+        foreach ($sourceColumns as $key => $value) {
+            if ($this->isColumnNeeded($key)) {
+                $row[$key] = $this->shouldEscapeColumn($key) ? e($value) : $value;
+            }
+        }
+    }
+
+    protected function resolveValue($value, $params, $escape)
+    {
+        if ($value instanceof Coluser) {
+            $value = $value(...$params);
+        }
+        // No need to escape blade views at all, so just return the content
+        elseif (view()->exists($value)) {
+            return (string) view($value, $params);
+        }
+
+        if ($escape) {
+            return e($value);
+        } else {
+            return $value;
+        }
     }
 
     protected function setupAddonColumns(&$row, $model)
     {
-        foreach ($this->addonColumns as $column) {
-            $row[$column['name']] = $this->compileValue($column['value'], ['model' => $model]);
+        foreach ($this->addonColumns as list($name, $value)) {
+            if ($this->isColumnNeeded($name)) {
+                $row[$name] = $this->resolveValue($value, compact('model'), $this->shouldEscapeColumn($name));
+            }
         }
     }
 
@@ -108,37 +153,27 @@ class DataTableBuilder
         return $rows;
     }
 
-    public function setRequest(Request $request)
+    public function build(Request $request = null)
     {
-        $this->request = $request;
-    }
+        $request = $request ?? request();
 
-    public function getRequest()
-    {
-        return $this->request ?? request();
-    }
+        $this->draw = $request->input('draw', 1);
 
-    public function build()
-    {
-        $request = $this->getRequest();
+        $this->start = $request->input('start', 0);
+        $this->length = $request->input('length', 10);
 
-        $draw = $request->input('draw', 1);
+        $this->columns = $request->input('columns', []);
+        $this->search = $request->input('search');
+        $this->orders = $request->input('order', []);
 
-        $start = $request->input('start', 0);
-        $length = $request->input('length', 10);
+        $total = $this->source->count();
 
-        $columns = $request->input('columns', []);
-        $search = $request->input('search', []);
-        $order = $request->input('order', []);
+        $this->filter();
 
-        $total = $this->source->getCountForPagination();
+        $totalFiltered = $this->source->count();
 
-        $this->filter($search, $columns);
-
-        $totalFiltered = $this->source->getCountForPagination();
-
-        $this->sort($order, $columns);
-        $this->paginate($start, $length);
+        $this->sort();
+        $this->paginate();
 
         $models = $this->source->get();
 

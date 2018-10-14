@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 class DataTableBuilder
 {
     protected $source;
-    protected $draw = 1;
     protected $start = 0;
     protected $length = 10;
     protected $columns = [];
@@ -125,7 +124,7 @@ class DataTableBuilder
 
     protected function setupAddonColumns(&$row, $model)
     {
-        foreach ($this->addonColumns as list($name, $value)) {
+        foreach ($this->addonColumns as list('name' => $name, 'value' => $value)) {
             if ($this->isColumnNeeded($name)) {
                 $row[$name] = $this->resolveValue($value, compact('model'), $this->shouldEscapeColumn($name));
             }
@@ -157,7 +156,7 @@ class DataTableBuilder
     {
         $request = $request ?? request();
 
-        $this->draw = $request->input('draw', 1);
+        $draw = $request->input('draw', 1);
 
         $this->start = $request->input('start', 0);
         $this->length = $request->input('length', 10);

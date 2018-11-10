@@ -6,27 +6,116 @@ use Illuminate\Http\Request;
 
 class DataTableBuilder
 {
+    /**
+     * The source we will fetch result from.
+     *
+     * @var mixed
+     */
     protected $source;
-    protected $offset = 0;
-    protected $limit = 10;
-    protected $columns = [];
-    protected $addonColumns = [];
-    protected $rawColumns = [];
-    protected $search;
-    protected $order;
 
-    public function __construct($source)
+    /**
+     * Columns that should be added to final result.
+     *
+     * @var array
+     */
+    protected $addonColumns = [];
+
+    /**
+     * Columns that should not be escaped.
+     *
+     * @var array
+     */
+    protected $rawColumns = [];
+
+    /**
+     * Columns that should be included in final result.
+     *
+     * @var array
+     */
+    protected $include = [];
+
+    /**
+     * Columns that should be excluded from final result.
+     *
+     * @var array
+     */
+    protected $exclude = [];
+
+    /**
+     * Whitelisted columns for order and search.
+     *
+     * @var array
+     */
+    protected $whitelist = [];
+
+    /**
+     * Blacklisted columns for order and search.
+     *
+     * @var array
+     */
+    protected $blacklist = [];
+
+    /**
+     * User filter.
+     *
+     * @var callable
+     */
+    protected $filter;
+
+    /**
+     * User sort.
+     *
+     * @var callable
+     */
+    protected $sort;
+
+    /**
+     * Enable default filter?
+     *
+     * @var bool
+     */
+    protected $defaultFilter = true;
+
+    /**
+     * Enable default sort?
+     *
+     * @var bool
+     */
+    protected $defaultSort = true;
+
+    /**
+     * Sets the source we will fetch result from.
+     *
+     * @param  mixed $source
+     * @return $this
+     */
+    public function source($source)
     {
         $this->source = $source;
-    }
-
-    public function addColumn($name, $value)
-    {
-        $this->addonColumns[$name] = ['name' => $name, 'value' => $value];
 
         return $this;
     }
 
+    /**
+     * Adds a new column to the result.
+     *
+     * @param  string $name
+     * @param  mixed $value
+     * @return $this
+     */
+    public function addColumn($name, $value)
+    {
+        $this->addonColumns[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets raw columns, raw columns won't be escaped.
+     *
+     * @param  array $keys
+     * @return $this
+     */
     public function rawColumns(array $keys)
     {
         $this->rawColumns = $keys;
@@ -34,210 +123,143 @@ class DataTableBuilder
         return $this;
     }
 
-    protected function isColumnNeeded($key)
+    /**
+     * Sets whitelisted columns, whitelisted columns will be orderable and searchable.
+     *
+     * @param  array $keys
+     * @return $this
+     */
+    public function whitelist(array $keys)
     {
-        return isset($this->columns[$key]);
+        $this->whitelist = $keys;
+
+        return $this;
     }
 
-    protected function shouldEscapeColumn($key)
+    /**
+     * Sets blacklisted columns, whitelisted columns won't be orderable and searchable.
+     *
+     * @param  array $keys
+     * @return $this
+     */
+    public function blacklist(array $keys)
     {
-        return !in_array($key, $this->rawColumns);
+        $this->blacklist = $keys;
+
+        return $this;
     }
 
-    protected function isColumnSearchable($key)
+    /**
+     * Enables default filter.
+     *
+     * @return $this
+     */
+    public function enableDefaultFilter()
     {
-        if (isset($this->addonColumns[$key])) {
-            return false;
-        } else {
-            return $this->columns[$key]['searchable'];
-        }
+        $this->defaultFilter = true;
+
+        return $this;
     }
 
-    protected function isColumnOrderable($key)
+    /**
+     * Disabled default filter.
+     *
+     * @return $this
+     */
+    public function disableDefaultFilter()
     {
-        if (isset($this->addonColumns[$key])) {
-            return false;
-        } else {
-            return $this->columns[$key]['orderable'];
-        }
+        $this->defaultFilter = false;
+
+        return $this;
     }
 
-    protected function search($search, $column)
+    /**
+     * Enables default sort.
+     *
+     * @return $this
+     */
+    public function enableDefaultSort()
     {
-        if ($search['regex']) {
-            $this->source->where($column['data'], 'REGEXP', $search['value']);
-        } else {
-            $this->source->where($column['data'], 'LIKE', $search['value']);
-        }
+        $this->defaultSort = true;
+
+        return $this;
     }
 
-    protected function filter()
+    /**
+     * Disabled default sort.
+     *
+     * @return $this
+     */
+    public function disableDefaultSort()
     {
-        // global filter
-        if ('' != $this->search['value']) {
-            foreach ($this->columns as $key => $column) {
-                if ($this->isColumnSearchable($key)) {
-                    $this->search($this->search, $column);
-                }
-            }
-        }
+        $this->defaultSort = false;
 
-        // column specific filter
-        foreach ($this->columns as $key => $column) {
-            if ($this->isColumnSearchable($key)) {
-                if ('' != $column['search']['value']) {
-                    $this->search($column['search'], $column);
-                }
-            }
-        }
+        return $this;
     }
 
-    protected function sort()
+    /**
+     * Sets custom filter function.
+     *
+     * @param  callable $callback
+     * @return $this
+     */
+    public function filter(callable $callback)
     {
-        foreach ($this->order as $order) {
-            if ($this->isColumnOrderable($order['column'])) {
-                $this->source->orderBy($this->columns[$order['column']]['data'], $order['dir']);
-            }
-        }
+        $this->filter = $callback;
+
+        return $this;
     }
 
-    protected function paginate()
+    /**
+     * Sets custom sort function.
+     *
+     * @param  callable $callback
+     * @return $this
+     */
+    public function sort(callable $callback)
     {
-        $this->source->offset($this->offset)->limit($this->limit);
+        $this->sort = $callback;
+
+        return $this;
     }
 
-    protected function setupSourceColumns(&$row, $model)
-    {
-        $sourceColumns = array_dot($model->toArray());
-
-        foreach ($sourceColumns as $key => $value) {
-            if ($this->isColumnNeeded($key)) {
-                $row[$key] = $this->shouldEscapeColumn($key) ? e($value) : $value;
-            }
-        }
-    }
-
-    protected function resolveValue($value, $params, $escape)
-    {
-        if ($value instanceof Coluser) {
-            $value = $value(...$params);
-        }
-        // No need to escape blade views, so just return the content
-        elseif (view()->exists($value)) {
-            return (string) view($value, $params);
-        }
-
-        if ($escape) {
-            return e($value);
-        } else {
-            return $value;
-        }
-    }
-
-    protected function setupAddonColumns(&$row, $model)
-    {
-        foreach ($this->addonColumns as $key => $column) {
-            if ($this->isColumnNeeded($key)) {
-                $row[$key] = $this->resolveValue($column['value'], compact('model'), $this->shouldEscapeColumn($key));
-            }
-        }
-    }
-
-    protected function setupColumns($model)
-    {
-        $row = [];
-
-        $this->setupSourceColumns($row, $model);
-        $this->setupAddonColumns($row, $model);
-
-        return $row;
-    }
-
-    protected function setupRows($models)
-    {
-        $rows = [];
-
-        foreach ($models as $model) {
-            $rows[] = $this->setupColumns($model);
-        }
-
-        return $rows;
-    }
-
-    protected function resolveColumnKey($column)
-    {
-        if ('' == $column['name']) {
-            return $column['data'];
-        } else {
-            return $column['name'];
-        }
-    }
-
-    protected function resolveColumn($column)
-    {
-        $column['searchable'] = filter_var($column['searchable'], FILTER_VALIDATE_BOOLEAN);
-        $column['orderable'] = filter_var($column['orderable'], FILTER_VALIDATE_BOOLEAN);
-        $column['search']['regex'] = filter_var($column['search']['regex'], FILTER_VALIDATE_BOOLEAN);
-
-        return $column;
-    }
-
-    protected function registerColumns($columns)
-    {
-        foreach ($columns as $column) {
-            $this->columns[$this->resolveColumnKey($column)] = $this->resolveColumn($column);
-        }
-    }
-
-    protected function registerPaging($start, $length)
-    {
-        // Don't allow more than 100 records cause of security reasons
-        if (($length - $start) > 100) {
-            list($this->offset, $this->limit) = [$start, 100];
-        } else {
-            list($this->offset, $this->limit) = [$start, $length];
-        }
-    }
-
-    protected function registerSearch($search)
-    {
-        $search['regex'] = filter_var($search['regex'], FILTER_VALIDATE_BOOLEAN);
-
-        $this->search = $search;
-    }
-
-    protected function registerOrder($order)
-    {
-        $keys = array_keys($this->columns);
-
-        foreach ($order as $o) {
-            $this->order[] = ['column' => $keys[$o['column']]] + $o;
-        }
-    }
-
+    /**
+     * Builds the datatable.
+     *
+     * @param  Request|null $request
+     * @return DataTable
+     */
     public function build(Request $request = null)
     {
-        $request = $request ?? request();
+        $dtr = $this->resolveRequest($request);
 
-        $draw = $request->input('draw', 1);
+        $draw = $dtr->draw();
 
-        $this->registerPaging($request->input('start', 0), $request->input('length', 10));
-        $this->registerColumns($request->input('columns', []));
-        $this->registerSearch($request->input('search'));
-        $this->registerOrder($request->input('order'));
+        $fetcher = $this->createFetcher();
 
-        $total = $this->source->count();
+        $total = $fetcher->count();
 
-        $this->filter();
+        if ($this->defaultFilter and $dtr->hasSearch()) $fetcher->globalFilter($dtr->search(), $dtr->searchableColumns());
+        if ($this->defaultFilter) $fetcher->columnFilter($dtr->searchColumns());
+        if ($this->filter) $fetcher->use($this->filter);
 
-        $totalFiltered = $this->source->count();
+        $totalFiltered = $fetcher->count();
 
-        $this->sort();
-        $this->paginate();
+        if ($this->defaultSort) $fetcher->sort($dtr->order());
+        if ($this->sort) $fetcher->use($this->sort);
 
-        $models = $this->source->get();
+        $fetcher->paginate($dtr->start(), $dtr->length());
 
-        $data = $this->setupRows($models);
+        $data = $fetcher->fetch();
+
+        $dp = $this->createDataProcessor();
+
+        $dp->add($this->addonColumns);
+        $dp->raw($this->rawColumns);
+        $dp->include($this->include);
+        $dp->exclude($this->exclude);
+
+        $data = $dp->process($data);
 
         return new DataTable(
             $draw, $total, $totalFiltered, $data

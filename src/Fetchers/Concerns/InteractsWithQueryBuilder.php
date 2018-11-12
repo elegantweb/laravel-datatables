@@ -76,7 +76,7 @@ trait InteractsWithQueryBuilder
      */
     protected function search($query, $column, $value, $regex = false, $boolean = 'or')
     {
-        // It contains dot so it is a json condition
+        // It contains dot so it is a JSON reference
         if (str_contains($column, '.')) {
             $column = str_replace('.', '->', $column);
         }
@@ -103,9 +103,10 @@ trait InteractsWithQueryBuilder
     /**
      * Fetches records from the source.
      *
+     * @param  array $columns
      * @return array
      */
-    public function fetch()
+    public function fetch(array $columns)
     {
         return $this->source->get();
     }

@@ -18,17 +18,17 @@ class DataTableBuilder
      *
      * @var array
      */
-    protected $addonColumns = [];
+    protected $addon = [];
 
     /**
      * Columns that should not be escaped.
      *
      * @var array
      */
-    protected $rawColumns = [];
+    protected $raw = [];
 
     /**
-     * Columns that should be included in final result.
+     * Columns that should be included at final result.
      *
      * @var array
      */
@@ -100,12 +100,12 @@ class DataTableBuilder
      * Adds a new column to the result.
      *
      * @param  string $name
-     * @param  mixed $value
+     * @param  mixed $data
      * @return $this
      */
-    public function addColumn($name, $value)
+    public function add($name, $data)
     {
-        $this->addonColumns[$name] = $value;
+        $this->addon[] = ['name' => $name, 'data' => $data];
 
         return $this;
     }
@@ -116,9 +116,35 @@ class DataTableBuilder
      * @param  array $keys
      * @return $this
      */
-    public function rawColumns(array $keys)
+    public function raw(array $keys)
     {
-        $this->rawColumns = $keys;
+        $this->raw = $keys;
+
+        return $this;
+    }
+
+    /**
+     * Columns to be included to the result.
+     *
+     * @param  array $keys
+     * @return $this
+     */
+    public function include(array $keys)
+    {
+        $this->include = $keys;
+
+        return $this;
+    }
+
+    /**
+     * Columns to be excluded from the result.
+     *
+     * @param  array $keys
+     * @return $this
+     */
+    public function exclude(array $keys)
+    {
+        $this->exclude = $keys;
 
         return $this;
     }
@@ -245,17 +271,17 @@ class DataTableBuilder
 
         $totalFiltered = $fetcher->count();
 
-        if ($this->defaultSort) $fetcher->sort($dtr->order());
+        if ($this->defaultSort) $fetcher->sort($dtr->order(), $dtr->orderableColumns());
         if ($this->sort) $fetcher->use($this->sort);
 
         $fetcher->paginate($dtr->start(), $dtr->length());
 
-        $data = $fetcher->fetch();
+        $data = $fetcher->fetch($dtr->columns());
 
         $dp = $this->createDataProcessor();
 
-        $dp->add($this->addonColumns);
-        $dp->raw($this->rawColumns);
+        $dp->add($this->addon);
+        $dp->raw($this->raw);
         $dp->include($this->include);
         $dp->exclude($this->exclude);
 

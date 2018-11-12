@@ -55,7 +55,7 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
      *
      * @return int
      */
-    public function getTotal()
+    public function total()
     {
         return $this->total;
     }
@@ -65,7 +65,7 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
      *
      * @return int
      */
-    public function getTotalFiltered()
+    public function totalFiltered()
     {
         return $this->totalFiltered;
     }
@@ -75,7 +75,7 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
      *
      * @return array
      */
-    public function getData()
+    public function data()
     {
         return $this->data;
     }

@@ -104,18 +104,14 @@ class DataTableRequest extends Request
 
     protected function filterSearch($search)
     {
-        $search['value'] = filter_var($search['value'] ?? '', FILTER_SANITIZE_STRING);
-        $search['regex'] = filter_var($search['regex'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $search['regex'] = filter_var($search['regex'], FILTER_VALIDATE_BOOLEAN);
+        $search['value'] = filter_var($search['value'], $search['regex'] ? FILTER_VALIDATE_REGEXP : FILTER_SANITIZE_STRING);
 
         return $search;
     }
 
     protected function filterOrder($order)
     {
-        if (!is_array($order)) {
-            return [];
-        }
-
         $filtered = [];
 
         foreach ($order as $rule) {
@@ -129,10 +125,6 @@ class DataTableRequest extends Request
 
     protected function filterColumns($columns)
     {
-        if (!is_array($columns)) {
-            return [];
-        }
-
         $filtered = [];
 
         foreach ($columns as $column) {
@@ -146,9 +138,9 @@ class DataTableRequest extends Request
 
     protected function filterColumn($column)
     {
-        $column['searchable'] = filter_var($column['searchable'] ?? true, FILTER_VALIDATE_BOOLEAN);
-        $column['orderable'] = filter_var($column['orderable'] ?? true, FILTER_VALIDATE_BOOLEAN);
-        $column['search'] = $this->filterSearch($column['search'] ?? null);
+        $column['searchable'] = filter_var($column['searchable'], FILTER_VALIDATE_BOOLEAN);
+        $column['orderable'] = filter_var($column['orderable'], FILTER_VALIDATE_BOOLEAN);
+        $column['search'] = $this->filterSearch($column['search']);
 
         return $column;
     }

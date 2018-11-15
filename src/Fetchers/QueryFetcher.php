@@ -41,7 +41,7 @@ class QueryFetcher
      */
     public function fetch(array $columns)
     {
-        $this->select($this->source, array_column($columns, 'data'));
+        $this->select($this->source, array_column($columns, 'name'));
 
         return $this->traitFetch($columns);
     }

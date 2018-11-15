@@ -4,140 +4,212 @@ namespace Elegant\DataTables;
 
 use Illuminate\Http\Request;
 
+/**
+ * @see https://datatables.net/manual/server-side
+ */
 class DataTableRequest extends Request
 {
-    protected $draw;
-    protected $start;
-    protected $length;
-    protected $columns = [];
-    protected $search = [];
-    protected $order = [];
-
+    /**
+     * Returns the draw number.
+     *
+     * @return int
+     */
     public function draw()
     {
         return $this->filterDraw($this->input('draw'));
     }
 
+    /**
+     * @param  mixed $draw
+     * @return int
+     */
+    protected function filterDraw($draw)
+    {
+        return filter_var($draw, FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
+    }
+
+    /**
+     * Returns the start point of the data.
+     *
+     * @return int|null
+     */
     public function start()
     {
         return $this->filterStart($this->input('start'));
     }
 
+    /**
+     * @param  mixed $start
+     * @return int|null
+     */
+    protected function filterStart($start)
+    {
+        return filter_var($start, FILTER_VALIDATE_INT, ['options' => ['default' => null]]);
+    }
+
+    /**
+     * Returns the length of the data.
+     *
+     * @return int|null
+     */
     public function length()
     {
         return $this->filterLength($this->input('length'));
     }
 
+    /**
+     * @param  mixed $length
+     * @return int|null
+     */
+    protected function filterLength($length)
+    {
+        $filtered = filter_var($length, FILTER_VALIDATE_INT, ['options' => ['default' => null]]);
+
+        // cause of security reasons we have to limit length value
+        if (null === $filtered) {
+            return null;
+        } else {
+            return min($filtered, 100);
+        }
+    }
+
+    /**
+     * Indicates if we have paging.
+     *
+     * @return bool
+     */
+    public function hasPaging()
+    {
+        return $this->start() && $this->length();
+    }
+
+    /**
+     * Returns the global search.
+     *
+     * @return array Array including value and regex parameters
+     */
     public function search()
     {
         return $this->filterSearch($request->input('search'));
     }
 
+    /**
+     * Indicates if we have search value.
+     *
+     * @return bool
+     */
     public function hasSearch()
     {
         return $this->input('search.value') != '';
     }
 
+    /**
+     * Returns orderings.
+     *
+     * @return array Array of arrays including column index and sort direction
+     */
     public function order()
     {
-        return $this->filterOrder($this->input('order', []));
+        return $this->filterOrder($this->input('order'));
     }
 
+    /**
+     * Returns columns.
+     *
+     * @return array Array of arrays including column data
+     */
     public function columns()
     {
-        return $this->filterColumns($this->input('columns', []));
+        return $this->filterColumns($this->input('columns'));
     }
 
+    /**
+     * Returns searchable columns.
+     *
+     * @return array
+     */
     public function searchableColumns()
     {
-        $searchable = [];
-
-        foreach ($this->columns as $column) {
-            if ($column['searchable']) {
-                $searchable[] = $column;
-            }
-        }
-
-        return $searchable;
+        return array_filter($this->columns(), function () {
+            return $column['searchable'];
+        });
     }
 
-    public function searchColumns()
-    {
-        $search = [];
-
-        foreach ($this->searchableColumns() as $column) {
-            if ($column['search']['value'] != '') {
-                $search[] = $column;
-            }
-        }
-
-        return $search;
-    }
-
+    /**
+     * Returns orderable columns.
+     *
+     * @return array
+     */
     public function orderableColumns()
     {
-        $orderable = [];
-
-        foreach ($this->columns as $column) {
-            if ($column['orderable']) {
-                $orderable[] = $column;
-            }
-        }
-
-        return $orderable;
+        return array_filter($this->columns(), function () {
+            return $column['orderable'];
+        });
     }
 
-    protected function filterDraw($draw)
+    /**
+     * Returns columns that have search.
+     *
+     * @return array
+     */
+    public function searchColumns()
     {
-        return filter_var($draw, FILTER_VALIDATE_INT);
+        return array_filter($this->searchableColumns(), function () {
+            return $column['search']['value'] != '';
+        });
     }
 
-    protected function filterStart($start)
+    /**
+     * @param  mixed $order
+     * @return array
+     */
+    protected function filterOrder($order)
     {
-        return filter_var($start, FILTER_VALIDATE_INT);
+        return array_walk($order, function (&$value) {
+            $value = $this->filterOrderValue($value);
+        });
     }
 
-    protected function filterLength($length)
+    /**
+     * @param  mixed $columns
+     * @return array
+     */
+    protected function filterColumns($columns)
     {
-        return min(filter_var($length, FILTER_VALIDATE_INT, ['options' => ['default' => 10]]), 100);
+        return array_walk($columns, function (&$column) {
+            $column = $this->filterColumn($column);
+        });
     }
 
+    /**
+     * @param  mixed $search
+     * @return array
+     */
     protected function filterSearch($search)
     {
         $search['regex'] = filter_var($search['regex'], FILTER_VALIDATE_BOOLEAN);
-        $search['value'] = filter_var($search['value'], $search['regex'] ? FILTER_VALIDATE_REGEXP : FILTER_SANITIZE_STRING);
 
         return $search;
     }
 
-    protected function filterOrder($order)
+    /**
+     * @param  mixed $value
+     * @return array
+     */
+    protected function filterOrderValue($value)
     {
-        $filtered = [];
+        $value['dir'] = in_array($value['dir'], ['asc', 'desc']) ? $value['dir'] : 'desc';
 
-        foreach ($order as $rule) {
-            if ($this->isValidOrderRule($rule)) {
-                $filtered[] = $this->filterOrderRule($rule);
-            }
-        }
-
-        return $filtered;
+        return $value;
     }
 
-    protected function filterColumns($columns)
-    {
-        $filtered = [];
-
-        foreach ($columns as $column) {
-            if ($this->isValidColumn($column)) {
-                $filtered[] = $this->filterColumn($column);
-            }
-        }
-
-        return $filtered;
-    }
-
+    /**
+     * @param  mixed $column
+     * @return array
+     */
     protected function filterColumn($column)
     {
+        $column['name'] = empty($column['name']) ? $column['data'] : $column['name'];
         $column['searchable'] = filter_var($column['searchable'], FILTER_VALIDATE_BOOLEAN);
         $column['orderable'] = filter_var($column['orderable'], FILTER_VALIDATE_BOOLEAN);
         $column['search'] = $this->filterSearch($column['search']);

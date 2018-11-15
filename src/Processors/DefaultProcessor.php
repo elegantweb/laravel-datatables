@@ -4,7 +4,7 @@ namespace Elegant\DataTables\Processors;
 
 use Elegant\DataTables\Support\Helper;
 
-class DataProcessor
+class DefaultProcessor
 {
     /**
      * Columns that should be added to final result.

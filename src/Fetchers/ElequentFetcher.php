@@ -25,25 +25,26 @@ class ElequentFetcher
      */
     protected function search($query, $column, $value, $regex, $boolean = 'or')
     {
-        if ($this->isRelation($query, $column)) {
-            $this->searchRelation($query, ...explode('.', $column, 2), $value, $regex, $boolean);
+        if ($this->isRelated($query, $column)) {
+            $this->searchRelated($query, $column, $value, $regex, $boolean);
         } else {
             $this->traitSearch($query, $column, $value, $regex, $boolean);
         }
     }
 
     /**
-     * Searchs inside a relationship.
+     * Searchs for the related column.
      *
      * @param mixed  $query
-     * @param string $relation Relation name
      * @param string $column Column name
      * @param string $value
      * @param bool   $regex
      * @param string $boolean
      */
-    protected function searchRelation($query, $relation, $column, $value, $regex, $boolean = 'or')
+    protected function searchRelated($query, $column, $value, $regex, $boolean = 'or')
     {
+        list($relation, $column) = explode('.', $column, 2);
+
         $method = 'or' === $boolean ? 'orWhereHas' : 'whereHas';
 
         $query->{$method}($relation, function ($query) use ($column, $value, $regex) {
@@ -58,10 +59,12 @@ class ElequentFetcher
      * @param  string $column
      * @return bool
      */
-    protected function isRelation($query, $column)
+    protected function isRelated($query, $column)
     {
-        if (str_contains($column, '.')) {
-            return $query->{explode('.', $column)[0]}() instanceof Relation;
+        list($relation,) = explode('.', $column);
+
+        if (method_exists($query, $relation)) {
+            return $query->{$relation}() instanceof Relation;
         } else {
             return false;
         }
@@ -70,12 +73,12 @@ class ElequentFetcher
     /**
      * Eagerly loads a relationship.
      *
-     * @param mixed  $column
-     * @param string $column
+     * @param mixed  $query
+     * @param string $relation
      */
-    protected function eagerLoadRelation($query, $column)
+    protected function eagerLoadRelation($query, $relation)
     {
-        $query->with(implode('.', array_splice(explode('.', $column), 0, -1)));
+        $query->with($relation);
     }
 
     /**
@@ -87,8 +90,8 @@ class ElequentFetcher
     protected function select($query, array $columns)
     {
         foreach ($columns as $column) {
-            if ($this->isRelation($query, $column)) {
-                $this->eagerLoadRelation($query, $column);
+            if ($this->isRelated($query, $column)) {
+                $this->eagerLoadRelation($query, implode('.', array_splice(explode('.', $column), 0, -1)));
             }
         }
     }

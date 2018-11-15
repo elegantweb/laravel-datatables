@@ -24,7 +24,7 @@ trait InteractsWithQueryBuilder
     {
         $this->source->where(function ($query) use ($search, $columns) {
             foreach ($columns as $key => $column) {
-                $this->search($query, $column['data'], $search['value'], $search['regex']);
+                $this->search($query, $column['name'], $search['value'], $search['regex']);
             }
         });
     }
@@ -37,7 +37,7 @@ trait InteractsWithQueryBuilder
     public function columnFilter(array $columns)
     {
         foreach ($columns as $key => $column) {
-            $this->search($this->source, $column['data'], $column['search']['value'], $column['search']['regex'], 'and');
+            $this->search($this->source, $column['name'], $column['search']['value'], $column['search']['regex'], 'and');
         }
     }
 
@@ -50,7 +50,7 @@ trait InteractsWithQueryBuilder
     public function sort($order, array $columns)
     {
         foreach ($this->order as $order) {
-            $this->order($this->source, $columns[$order['column']]['data'], $order['dir']);
+            $this->order($this->source, $columns[$order['column']]['name'], $order['dir']);
         }
     }
 

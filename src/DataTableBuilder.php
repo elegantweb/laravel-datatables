@@ -176,6 +176,21 @@ class DataTableBuilder
     }
 
     /**
+     * Indicates if the key is in blacklist.
+     *
+     * @param  string $key
+     * @return bool
+     */
+    public function isBlacklisted($key)
+    {
+        if (empty($this->whitelist)) {
+            return !in_array($key, $this->blacklist);
+        } else {
+            return in_array($key, $this->whitelist);
+        }
+    }
+
+    /**
      * Enables default filter.
      *
      * @return $this
@@ -261,7 +276,7 @@ class DataTableBuilder
 
         $draw = $dtr->draw();
 
-        $fetcher = $this->createFetcher();
+        $fetcher = $this->getFetcher();
 
         $total = $fetcher->count();
 
@@ -274,11 +289,11 @@ class DataTableBuilder
         if ($this->defaultSort) $fetcher->sort($dtr->order(), $dtr->orderableColumns());
         if ($this->sort) $fetcher->use($this->sort);
 
-        $fetcher->paginate($dtr->start(), $dtr->length());
+        if ($dtr->hasPaging()) $fetcher->paginate($dtr->start(), $dtr->length());
 
         $data = $fetcher->fetch($dtr->columns());
 
-        $dp = $this->createDataProcessor();
+        $dp = $this->getProcessor();
 
         $dp->add($this->addon);
         $dp->raw($this->raw);

@@ -37,17 +37,26 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
     protected $data;
 
     /**
+     * Error.
+     *
+     * @var string|null
+     */
+    protected $error = null;
+
+    /**
      * @param int $draw Draw number
      * @param int $total Total records
      * @param int $totalFiltered Total records after filter
      * @param array $data Records data
+     * @param string|null $error
      */
-    public function __construct($draw, $total, $totalFiltered, array $data)
+    public function __construct($draw, $total, $totalFiltered, array $data, $error = null)
     {
         $this->draw = $draw;
         $this->total = $total;
         $this->totalFiltered = $totalFiltered;
         $this->data = $data;
+        $this->error = $error;
     }
 
     /**
@@ -92,6 +101,7 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
             'recordsTotal' => $this->total,
             'recordsFiltered' => $this->totalFiltered,
             'data' => $this->data,
+            'error' => $this->error,
         ];
     }
 

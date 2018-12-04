@@ -276,11 +276,11 @@ class DataTableBuilder
         }
 
         if ($this->defaultFilter) {
-             $fetcher->columnFilter($dtr->searchColumns());
+             $this->fetcher->columnFilter($dtr->searchColumns());
         }
 
         if ($this->filter) {
-            $fetcher->use($this->filter);
+            call_user_func($this->filter, $this->source);
         }
     }
 
@@ -296,7 +296,7 @@ class DataTableBuilder
         }
 
         if ($this->sort) {
-            $this->fetcher->use($this->sort);
+            call_user_func($this->sort, $this->source);
         }
     }
 

@@ -265,42 +265,108 @@ class DataTableBuilder
     }
 
     /**
+     * Applies filters.
+     *
+     * @param DataTableRequest $dtr
+     */
+    protected function applyFilter(DataTableRequest $dtr)
+    {
+        if ($this->defaultFilter and $dtr->hasSearch()) {
+            $this->fetcher->globalFilter($dtr->search(), $dtr->searchableColumns());
+        }
+
+        if ($this->defaultFilter) {
+             $fetcher->columnFilter($dtr->searchColumns());
+        }
+
+        if ($this->filter) {
+            $fetcher->use($this->filter);
+        }
+    }
+
+    /**
+     * Applies sort.
+     *
+     * @param DataTableRequest $dtr
+     */
+    protected function applySort(DataTableRequest $dtr)
+    {
+        if ($this->defaultSort) {
+            $this->fetcher->sort($dtr->order(), $dtr->orderableColumns());
+        }
+
+        if ($this->sort) {
+            $this->fetcher->use($this->sort);
+        }
+    }
+
+    /**
+     * Applies paging.
+     *
+     * @param DataTableRequest $dtr
+     */
+    protected function applySort(DataTableRequest $dtr)
+    {
+        if ($dtr->hasPaging()) {
+            $this->fetcher->paginate($dtr->start(), $dtr->length());
+        }
+    }
+
+    /**
+     * Fetches data.
+     *
+     * @param  DataTableRequest $dtr
+     * @return array Including total, total filtered, data
+     */
+    protected function fetch(DataTableRequest $dtr)
+    {
+        $total = $this->fetcher->count();
+
+        $this->applyFilter($dtr);
+
+        $totalFiltered = $this->fetcher->count();
+
+        $this->applySort($dtr);
+        $this->applyPaging($dtr);
+
+        $data = $this->fetcher->fetch($dtr->columns());
+
+        return [
+            $total, $totalFiltered, $data,
+        ];
+    }
+
+    /**
+     * Processes the data.
+     *
+     * @param  mixed $data
+     * @return array
+     */
+    protected function process($data)
+    {
+        $processor = $this->createProcessor();
+
+        $processor->add($this->addon);
+        $processor->raw($this->raw);
+        $processor->include($this->include);
+        $processor->exclude($this->exclude);
+
+        $data = $processor->process($data);
+
+        return $data;
+    }
+
+    /**
      * Builds the datatable.
      *
-     * @param  Request|null $request
      * @return DataTable
      */
-    public function build(Request $request = null)
+    public function build()
     {
-        $dtr = $this->resolveRequest($request);
+        $draw = $this->request->draw();
+        list($total, $totalFiltered, $data) = $this->fetch($dtr);
 
-        $draw = $dtr->draw();
-
-        $fetcher = $this->getFetcher();
-
-        $total = $fetcher->count();
-
-        if ($this->defaultFilter and $dtr->hasSearch()) $fetcher->globalFilter($dtr->search(), $dtr->searchableColumns());
-        if ($this->defaultFilter) $fetcher->columnFilter($dtr->searchColumns());
-        if ($this->filter) $fetcher->use($this->filter);
-
-        $totalFiltered = $fetcher->count();
-
-        if ($this->defaultSort) $fetcher->sort($dtr->order(), $dtr->orderableColumns());
-        if ($this->sort) $fetcher->use($this->sort);
-
-        if ($dtr->hasPaging()) $fetcher->paginate($dtr->start(), $dtr->length());
-
-        $data = $fetcher->fetch($dtr->columns());
-
-        $dp = $this->getProcessor();
-
-        $dp->add($this->addon);
-        $dp->raw($this->raw);
-        $dp->include($this->include);
-        $dp->exclude($this->exclude);
-
-        $data = $dp->process($data);
+        $this->process($data);
 
         return new DataTable(
             $draw, $total, $totalFiltered, $data

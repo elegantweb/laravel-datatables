@@ -2,6 +2,6 @@
 
 namespace Elegant\DataTables;
 
-class Factory
+class Model
 {
 }

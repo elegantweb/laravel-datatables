@@ -2,12 +2,12 @@
 
 namespace Elegant\DataTables;
 
-use Illuminate\Http\Request;
+use Illuminate\Http\Request as BaseRequest;
 
 /**
  * @see https://datatables.net/manual/server-side
  */
-class DataTableRequest extends Request
+class Request extends BaseRequest
 {
     /**
      * Returns the draw number.

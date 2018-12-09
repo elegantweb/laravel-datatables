@@ -1,12 +1,13 @@
 <?php
 
-namespace Elegant\DataTables\Fetchers;
+namespace Elegant\DataTables;
 
-use Elegant\DataTables\Fetchers\Concerns\InteractsWithQueryBuilder;
+use Elegant\DataTables\Contracts\Driver;
+use Elegant\DataTables\Concerns\InteractsWithQueryBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
-class ElequentFetcher
+class ElequentDriver implements Driver
 {
     use InteractsWithQueryBuilder {
         search as traitSearch;
@@ -68,41 +69,5 @@ class ElequentFetcher
         } else {
             return false;
         }
-    }
-
-    /**
-     * Eagerly loads a relationship.
-     *
-     * @param mixed  $query
-     * @param string $relation
-     */
-    protected function eagerLoadRelation($query, $relation)
-    {
-        $query->with($relation);
-    }
-
-    /**
-     * Select only required columns.
-     *
-     * @param mixed $query
-     * @param array $columns
-     */
-    protected function select($query, array $columns)
-    {
-        foreach ($columns as $column) {
-            if ($this->isRelated($query, $column)) {
-                $this->eagerLoadRelation($query, implode('.', array_splice(explode('.', $column), 0, -1)));
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function fetch(array $columns)
-    {
-        $this->select($this->source, array_column($columns, 'data'));
-
-        return $this->traitFetch($columns);
     }
 }

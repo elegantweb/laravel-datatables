@@ -1,11 +1,18 @@
 <?php
 
-namespace Elegant\DataTables\Fetchers\Concerns;
+namespace Elegant\DataTables\Concerns;
 
 trait InteractsWithQueryBuilder
 {
     /**
-     * Counts records at the source.
+     * Source we will get results from.
+     *
+     * @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     */
+    protected $source;
+
+    /**
+     * Counts records.
      *
      * @return int
      */
@@ -42,30 +49,6 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Applies sort at the source.
-     *
-     * @param array $order
-     * @param array $columns
-     */
-    public function sort($order, array $columns)
-    {
-        foreach ($this->order as $order) {
-            $this->order($this->source, $columns[$order['column']]['name'], $order['dir']);
-        }
-    }
-
-    /**
-     * Applies paginate at the source.
-     *
-     * @param int $start
-     * @param int $length
-     */
-    public function paginate($start, $length)
-    {
-        $this->source->offset($start)->limit($length);
-    }
-
-    /**
      * Searches using the column at the source.
      *
      * @param mixed  $query
@@ -89,6 +72,19 @@ trait InteractsWithQueryBuilder
     }
 
     /**
+     * Applies sort at the source.
+     *
+     * @param array $order
+     * @param array $columns
+     */
+    public function sort($order, array $columns)
+    {
+        foreach ($this->order as $order) {
+            $this->order($this->source, $columns[$order['column']]['name'], $order['dir']);
+        }
+    }
+
+    /**
      * Orders the column at the source.
      *
      * @param mixed $query
@@ -101,12 +97,22 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Fetches records from the source.
+     * Applies paginate at the source.
      *
-     * @param  array $columns
+     * @param int $start
+     * @param int $length
+     */
+    public function paginate($start, $length)
+    {
+        $this->source->offset($start)->limit($length);
+    }
+
+    /**
+     * Returns records.
+     *
      * @return array
      */
-    public function fetch(array $columns)
+    public function get()
     {
         return $this->source->get();
     }

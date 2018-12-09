@@ -1,10 +1,10 @@
 <?php
 
-namespace Elegant\DataTables\Processors;
+namespace Elegant\DataTables;
 
 use Elegant\DataTables\Support\Helper;
 
-class DefaultProcessor
+class Processor
 {
     /**
      * Columns that should be added to final result.

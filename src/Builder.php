@@ -2,16 +2,24 @@
 
 namespace Elegant\DataTables;
 
-use Illuminate\Http\Request;
+use Elegant\DataTables\Contracts\Driver;
+use Elegant\DataTables\Contracts\Processor;
 
-class DataTableBuilder
+class Builder
 {
     /**
-     * The source we will fetch result from.
+     * Driver to interact with.
      *
-     * @var mixed
+     * @var Driver
      */
-    protected $source;
+    protected $driver;
+
+    /**
+     * Processor to interact with.
+     *
+     * @var Processor
+     */
+    protected $processor;
 
     /**
      * Columns that should be added to final result.
@@ -84,16 +92,46 @@ class DataTableBuilder
     protected $defaultSort = true;
 
     /**
-     * Sets the source we will fetch result from.
-     *
-     * @param  mixed $source
-     * @return $this
+     * @param Request $request
+     * @param Driver $driver
+     * @param Processor $processor
      */
-    public function source($source)
+    public function __construct(Request $request, Driver $driver, Processor $processor)
     {
-        $this->source = $source;
+        $this->request = $request;
+        $this->driver = $driver;
+        $this->processor = $processor;
+    }
 
-        return $this;
+    /**
+     * Returns the request.
+     *
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+
+    /**
+     * Returns the driver.
+     *
+     * @return Driver
+     */
+    public function getDriver()
+    {
+        return $this->driver;
+    }
+
+    /**
+     * Returns the processor.
+     *
+     * @return Driver
+     */
+    public function getProcessor()
+    {
+        return $this->processor;
     }
 
     /**
@@ -163,6 +201,19 @@ class DataTableBuilder
     }
 
     /**
+     * Pushes columns to the whitelisted columns.
+     *
+     * @param  array $keys
+     * @return $this
+     */
+    public function pushToWhitelist(array $keys)
+    {
+        $this->whitelist = array_merge($this->whitelist, $keys);
+
+        return $this;
+    }
+
+    /**
      * Sets blacklisted columns, whitelisted columns won't be orderable and searchable.
      *
      * @param  array $keys
@@ -171,6 +222,19 @@ class DataTableBuilder
     public function blacklist(array $keys)
     {
         $this->blacklist = $keys;
+
+        return $this;
+    }
+
+    /**
+     * Pushes columns to the blacklisted columns.
+     *
+     * @param  array $keys
+     * @return $this
+     */
+    public function pushToBlacklist(array $keys)
+    {
+        $this->blacklist = array_merge($this->blacklist, $keys);
 
         return $this;
     }
@@ -265,71 +329,74 @@ class DataTableBuilder
     }
 
     /**
-     * Applies filters.
-     *
-     * @param DataTableRequest $dtr
+     * Applies filter.
      */
-    protected function applyFilter(DataTableRequest $dtr)
+    protected function applyFilter()
     {
-        if ($this->defaultFilter and $dtr->hasSearch()) {
-            $this->fetcher->globalFilter($dtr->search(), $dtr->searchableColumns());
+        if ($this->defaultFilter and $this->request->hasSearch()) {
+            $this->driver->globalFilter($this->request->search(), $this->searchableColumns());
         }
 
         if ($this->defaultFilter) {
-             $this->fetcher->columnFilter($dtr->searchColumns());
+             $this->driver->columnFilter($this->searchColumns());
         }
 
         if ($this->filter) {
-            call_user_func($this->filter, $this->source);
+            $this->driver->use($this->filter);
         }
     }
 
     /**
      * Applies sort.
-     *
-     * @param DataTableRequest $dtr
      */
-    protected function applySort(DataTableRequest $dtr)
+    protected function applySort()
     {
         if ($this->defaultSort) {
-            $this->fetcher->sort($dtr->order(), $dtr->orderableColumns());
+            $this->driver->sort($this->request->order(), $this->orderableColumns());
         }
 
         if ($this->sort) {
-            call_user_func($this->sort, $this->source);
+            $this->driver->use($this->sort);
         }
     }
 
     /**
      * Applies paging.
-     *
-     * @param DataTableRequest $dtr
      */
-    protected function applySort(DataTableRequest $dtr)
+    protected function applyPaging()
     {
-        if ($dtr->hasPaging()) {
-            $this->fetcher->paginate($dtr->start(), $dtr->length());
+        if ($this->request->hasPaging()) {
+            $this->driver->paginate($this->request->start(), $this->request->length());
         }
     }
 
     /**
-     * Fetches data.
+     * Results.
      *
-     * @param  DataTableRequest $dtr
      * @return array Including total, total filtered, data
      */
-    protected function fetch(DataTableRequest $dtr)
+    protected function results()
     {
-        $total = $this->fetcher->count();
+        $this->driver->reset();
 
-        $this->applyFilter($dtr);
+        $total = $this->driver->count();
 
-        $totalFiltered = $this->fetcher->count();
+        if (0 == $total) {
+            return [0, 0, []];
+        }
 
-        $this->applySort($dtr);
-        $this->applyPaging($dtr);
+        $this->applyFilter();
 
-        $data = $this->fetcher->fetch($dtr->columns());
+        $totalFiltered = $this->driver->count();
+
+        if (0 == $totalFiltered) {
+            return [$total, 0, []];
+        }
+
+        $this->applySort();
+        $this->applyPaging();
+
+        $data = $this->driver->get();
 
         return [
             $total, $totalFiltered, $data,
@@ -344,14 +411,12 @@ class DataTableBuilder
      */
     protected function process($data)
     {
-        $processor = $this->createProcessor();
+        $this->processor->add($this->addon);
+        $this->processor->raw($this->raw);
+        $this->processor->include($this->include);
+        $this->processor->exclude($this->exclude);
 
-        $processor->add($this->addon);
-        $processor->raw($this->raw);
-        $processor->include($this->include);
-        $processor->exclude($this->exclude);
-
-        $data = $processor->process($data);
+        $data = $this->processor->process($data);
 
         return $data;
     }
@@ -364,7 +429,7 @@ class DataTableBuilder
     public function build()
     {
         $draw = $this->request->draw();
-        list($total, $totalFiltered, $data) = $this->fetch($dtr);
+        list($total, $totalFiltered, $data) = $this->results();
 
         $this->process($data);
 

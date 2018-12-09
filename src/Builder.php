@@ -240,12 +240,12 @@ class Builder
     }
 
     /**
-     * Indicates if the key is in blacklist.
+     * Indicates if the key is safe to search/order.
      *
      * @param  string $key
      * @return bool
      */
-    public function isBlacklisted($key)
+    public function isSafe($key)
     {
         if (empty($this->whitelist)) {
             return !in_array($key, $this->blacklist);
@@ -329,6 +329,42 @@ class Builder
     }
 
     /**
+     * Returns safe searchable columns.
+     *
+     * @return array
+     */
+    protected function searchableColumns()
+    {
+        return array_filter($this->request->searchableColumns(), function ($column) {
+            return $this->isSafe($column['name']);
+        });
+    }
+
+    /**
+     * Returns safe search columns.
+     *
+     * @return array
+     */
+    protected function searchColumns()
+    {
+        return array_filter($this->request->searchColumns(), function ($column) {
+            return $this->isSafe($column['name']);
+        });
+    }
+
+    /**
+     * Returns safe orderable columns.
+     *
+     * @return array
+     */
+    protected function orderableColumns()
+    {
+        return array_filter($this->request->orderableColumns(), function ($column) {
+            return $this->isSafe($column['name']);
+        });
+    }
+
+    /**
      * Applies filter.
      */
     protected function applyFilter()
@@ -342,7 +378,7 @@ class Builder
         }
 
         if ($this->filter) {
-            $this->driver->use($this->filter);
+            $this->driver->call($this->filter);
         }
     }
 
@@ -356,7 +392,7 @@ class Builder
         }
 
         if ($this->sort) {
-            $this->driver->use($this->sort);
+            $this->driver->call($this->sort);
         }
     }
 
@@ -381,7 +417,7 @@ class Builder
 
         $total = $this->driver->count();
 
-        if (0 == $total) {
+        if (0 === $total) {
             return [0, 0, []];
         }
 
@@ -389,7 +425,7 @@ class Builder
 
         $totalFiltered = $this->driver->count();
 
-        if (0 == $totalFiltered) {
+        if (0 === $totalFiltered) {
             return [$total, 0, []];
         }
 
@@ -399,7 +435,7 @@ class Builder
         $data = $this->driver->get();
 
         return [
-            $total, $totalFiltered, $data,
+            $total, $totalFiltered, $data
         ];
     }
 

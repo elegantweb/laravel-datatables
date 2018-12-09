@@ -18,7 +18,8 @@ class ElequentDriver implements Driver
      */
     public function __construct(QueryBuilder $source)
     {
-        $this->source = $source;
+        $this->original = $source;
+        $this->source = clone $source;
     }
 
     /**

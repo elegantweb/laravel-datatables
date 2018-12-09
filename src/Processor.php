@@ -2,9 +2,10 @@
 
 namespace Elegant\DataTables;
 
+use Elegant\DataTables\Contracts\Processor as ProcessorContract;
 use Elegant\DataTables\Support\Helper;
 
-class Processor
+class Processor implements ProcessorContract
 {
     /**
      * Columns that should be added to final result.
@@ -35,10 +36,7 @@ class Processor
     protected $exclude = [];
 
     /**
-     * Sets addon columns, addon columns will be added to the result.
-     *
-     * @param  array $columns
-     * @return $this
+     * @inheritdoc
      */
     public function add(array $columns)
     {
@@ -48,10 +46,7 @@ class Processor
     }
 
     /**
-     * Sets raw columns, raw columns won't be escaped.
-     *
-     * @param  array $keys
-     * @return $this
+     * @inheritdoc
      */
     public function raw(array $keys)
     {
@@ -61,10 +56,7 @@ class Processor
     }
 
     /**
-     * Columns to be included to the result.
-     *
-     * @param  array $keys
-     * @return $this
+     * @inheritdoc
      */
     public function include(array $keys)
     {
@@ -74,10 +66,7 @@ class Processor
     }
 
     /**
-     * Columns to be excluded from the result.
-     *
-     * @param  array $keys
-     * @return $this
+     * @inheritdoc
      */
     public function exclude(array $keys)
     {
@@ -170,10 +159,7 @@ class Processor
     }
 
     /**
-     * Processes the data.
-     *
-     * @param  mixed $data
-     * @return array
+     * @inheritdoc
      */
     public function process($data)
     {

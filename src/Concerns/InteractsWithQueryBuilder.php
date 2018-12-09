@@ -5,6 +5,13 @@ namespace Elegant\DataTables\Concerns;
 trait InteractsWithQueryBuilder
 {
     /**
+     * Original source we store to reset state.
+     *
+     * @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     */
+    protected $original;
+
+    /**
      * Source we will get results from.
      *
      * @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
@@ -12,9 +19,15 @@ trait InteractsWithQueryBuilder
     protected $source;
 
     /**
-     * Counts records.
-     *
-     * @return int
+     * @inheritdoc
+     */
+    public function reset()
+    {
+        $this->source = clone $this->original;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function count()
     {
@@ -22,10 +35,7 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Applies global filter to the columns at the source.
-     *
-     * @param array $search
-     * @param array $columns
+     * @inheritdoc
      */
     public function globalFilter($search, array $columns)
     {
@@ -37,9 +47,7 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Applies filter to the columns at the source.
-     *
-     * @param array $columns
+     * @inheritdoc
      */
     public function columnFilter(array $columns)
     {
@@ -72,10 +80,7 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Applies sort at the source.
-     *
-     * @param array $order
-     * @param array $columns
+     * @inheritdoc
      */
     public function sort($order, array $columns)
     {
@@ -97,10 +102,7 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Applies paginate at the source.
-     *
-     * @param int $start
-     * @param int $length
+     * @inheritdoc
      */
     public function paginate($start, $length)
     {
@@ -108,12 +110,18 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * Returns records.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function get()
     {
         return $this->source->get();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function call(callable $callable)
+    {
+        call_user_func($callable, $this->source);
     }
 }

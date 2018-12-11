@@ -96,13 +96,18 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
      */
     public function toArray()
     {
-        return [
+        $arr = [
             'draw' => $this->draw,
             'recordsTotal' => $this->total,
             'recordsFiltered' => $this->totalFiltered,
             'data' => $this->data,
-            'error' => $this->error,
         ];
+
+        if ($this->error) {
+            return $arr + ['error' => $this->error];
+        } else {
+            return $arr;
+        }
     }
 
     /**
@@ -118,7 +123,7 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
     /**
      * JSON representation of the datatable.
      *
-     * @param  int $options
+     * @param int $options
      * @return string
      */
     public function toJson($options = 0)

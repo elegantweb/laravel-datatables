@@ -7,7 +7,7 @@ interface Processor
     /**
      * Sets addon columns, addon columns will be added to the result.
      *
-     * @param  array $columns
+     * @param array $columns
      * @return $this
      */
     public function add(array $columns);
@@ -15,31 +15,31 @@ interface Processor
     /**
      * Sets raw columns, raw columns won't be escaped.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function raw(array $keys);
+    public function raw(array $names);
 
     /**
      * Columns to be included to the result.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function include(array $keys);
+    public function include(array $names);
 
     /**
      * Columns to be excluded from the result.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function exclude(array $keys);
+    public function exclude(array $names);
 
     /**
      * Processes the data.
      *
-     * @param  mixed $data
+     * @param mixed $data
      * @return array
      */
     public function process($data);

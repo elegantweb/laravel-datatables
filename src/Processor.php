@@ -48,9 +48,9 @@ class Processor implements ProcessorContract
     /**
      * @inheritdoc
      */
-    public function raw(array $keys)
+    public function raw(array $names)
     {
-        $this->raw = $keys;
+        $this->raw = $names;
 
         return $this;
     }
@@ -58,9 +58,9 @@ class Processor implements ProcessorContract
     /**
      * @inheritdoc
      */
-    public function include(array $keys)
+    public function include(array $names)
     {
-        $this->include = $keys;
+        $this->include = $names;
 
         return $this;
     }
@@ -68,9 +68,9 @@ class Processor implements ProcessorContract
     /**
      * @inheritdoc
      */
-    public function exclude(array $keys)
+    public function exclude(array $names)
     {
-        $this->exclude = $keys;
+        $this->exclude = $names;
 
         return $this;
     }
@@ -78,27 +78,27 @@ class Processor implements ProcessorContract
     /**
      * Indicates if the column should be at the result.
      *
-     * @param  string $key
+     * @param string $name
      * @return bool
      */
-    protected function isColumnNeeded($key)
+    protected function isColumnRequired($name)
     {
         if (empty($this->include)) {
-            return !in_array($key, $this->exclude);
+            return !in_array($name, $this->exclude);
         } else {
-            return in_array($key, $this->include);
+            return in_array($name, $this->include);
         }
     }
 
     /**
      * Indicates if the column should be escaped.
      *
-     * @param  string $key
+     * @param string $name
      * @return bool
      */
-    protected function shouldEscapeColumn($key)
+    protected function shouldEscapeColumn($name)
     {
-        return !in_array($key, $this->rawColumns);
+        return !in_array($name, $this->rawColumns);
     }
 
     /**
@@ -111,9 +111,9 @@ class Processor implements ProcessorContract
     {
         $columns = array_dot($record);
 
-        foreach ($columns as $key => $value) {
-            if ($this->isColumnNeeded($key)) {
-                array_set($row, $key, $this->shouldEscapeColumn($key) ? e($value) : $value);
+        foreach ($columns as $name => $value) {
+            if ($this->isColumnRequired($name)) {
+                array_set($row, $name, $this->shouldEscapeColumn($name) ? e($value) : $value);
             }
         }
     }
@@ -126,9 +126,9 @@ class Processor implements ProcessorContract
      */
     protected function setupAddonColumns(&$row, $record)
     {
-        foreach ($this->addonColumns as $key => $column) {
-            if ($this->isColumnNeeded($key)) {
-                array_set($row, $key, Helper::resolveData($column['data'], compact('record'), $this->shouldEscapeColumn($key)));
+        foreach ($this->addon as $name => $data) {
+            if ($this->isColumnRequired($name)) {
+                array_set($row, $name, Helper::resolveData($data, compact('record'), $this->shouldEscapeColumn($name)));
             }
         }
     }

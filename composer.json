@@ -24,5 +24,12 @@
         "psr-4": {
             "Elegant\\DataTables\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Elegant\\DataTables\\DataTablesServiceProvider"
+            ]
+        }
     }
 }

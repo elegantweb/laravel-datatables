@@ -10,9 +10,9 @@ class Helper
     /**
      * Determines if data is callable or blade string or blade view, processes and returns.
      *
-     * @param  mixed $data
-     * @param  array $param
-     * @param  bool $escape
+     * @param mixed $data
+     * @param array $param
+     * @param bool $escape
      * @return mixed
      */
     protected function resolveData($data, array $params = [], $escape = true)
@@ -35,8 +35,8 @@ class Helper
     /**
      * Determines if data is blade string or blade view, processes and returns.
      *
-     * @param  mixed $data
-     * @param  array $param
+     * @param mixed $data
+     * @param array $param
      * @return mixed
      */
     public static function resolveBladeData($data, array $params = [])
@@ -54,7 +54,7 @@ class Helper
     /**
      * Casts the value into an array.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return array
      */
     public static function castToArray($value)
@@ -69,7 +69,7 @@ class Helper
     /**
      * Converts the value into an array.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return array
      */
     public static function convertToArray($value)

@@ -2,11 +2,19 @@
 
 namespace Elegant\DataTables;
 
+use Exception;
 use Elegant\DataTables\Contracts\Driver;
 use Elegant\DataTables\Contracts\Processor;
 
 class Builder
 {
+    /**
+     * Datatable request instance.
+     *
+     * @var Driver
+     */
+    protected $driver;
+
     /**
      * Driver to interact with.
      *
@@ -104,6 +112,18 @@ class Builder
     }
 
     /**
+     * Sets the request.
+     *
+     * @return $this
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+
+        return $this;
+    }
+
+    /**
      * Returns the request.
      *
      * @return Request
@@ -137,13 +157,13 @@ class Builder
     /**
      * Adds a new column to the result.
      *
-     * @param  string $name
-     * @param  mixed $data
+     * @param string $name
+     * @param mixed $data
      * @return $this
      */
     public function add($name, $data)
     {
-        $this->addon[] = ['name' => $name, 'data' => $data];
+        $this->addon[$name] = $data;
 
         return $this;
     }
@@ -151,12 +171,12 @@ class Builder
     /**
      * Sets raw columns, raw columns won't be escaped.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function raw(array $keys)
+    public function raw(array $names)
     {
-        $this->raw = $keys;
+        $this->raw = $names;
 
         return $this;
     }
@@ -164,12 +184,12 @@ class Builder
     /**
      * Columns to be included to the result.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function include(array $keys)
+    public function include(array $names)
     {
-        $this->include = $keys;
+        $this->include = $names;
 
         return $this;
     }
@@ -177,12 +197,12 @@ class Builder
     /**
      * Columns to be excluded from the result.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function exclude(array $keys)
+    public function exclude(array $names)
     {
-        $this->exclude = $keys;
+        $this->exclude = $names;
 
         return $this;
     }
@@ -190,12 +210,12 @@ class Builder
     /**
      * Sets whitelisted columns, whitelisted columns will be orderable and searchable.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function whitelist(array $keys)
+    public function whitelist(array $names)
     {
-        $this->whitelist = $keys;
+        $this->whitelist = $names;
 
         return $this;
     }
@@ -203,12 +223,12 @@ class Builder
     /**
      * Pushes columns to the whitelisted columns.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function pushToWhitelist(array $keys)
+    public function pushToWhitelist(array $names)
     {
-        $this->whitelist = array_merge($this->whitelist, $keys);
+        $this->whitelist = array_merge($this->whitelist, $names);
 
         return $this;
     }
@@ -216,12 +236,12 @@ class Builder
     /**
      * Sets blacklisted columns, whitelisted columns won't be orderable and searchable.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function blacklist(array $keys)
+    public function blacklist(array $names)
     {
-        $this->blacklist = $keys;
+        $this->blacklist = $names;
 
         return $this;
     }
@@ -229,12 +249,12 @@ class Builder
     /**
      * Pushes columns to the blacklisted columns.
      *
-     * @param  array $keys
+     * @param array $names
      * @return $this
      */
-    public function pushToBlacklist(array $keys)
+    public function pushToBlacklist(array $names)
     {
-        $this->blacklist = array_merge($this->blacklist, $keys);
+        $this->blacklist = array_merge($this->blacklist, $names);
 
         return $this;
     }
@@ -242,15 +262,15 @@ class Builder
     /**
      * Indicates if the key is safe to search/order.
      *
-     * @param  string $key
+     * @param string $name
      * @return bool
      */
-    public function isSafe($key)
+    public function isSafe($name)
     {
         if (empty($this->whitelist)) {
-            return !in_array($key, $this->blacklist);
+            return !in_array($name, $this->blacklist);
         } else {
-            return in_array($key, $this->whitelist);
+            return in_array($name, $this->whitelist);
         }
     }
 
@@ -305,7 +325,7 @@ class Builder
     /**
      * Sets custom filter function.
      *
-     * @param  callable $callback
+     * @param callable $callback
      * @return $this
      */
     public function filter(callable $callback)
@@ -318,7 +338,7 @@ class Builder
     /**
      * Sets custom sort function.
      *
-     * @param  callable $callback
+     * @param callable $callback
      * @return $this
      */
     public function sort(callable $callback)
@@ -434,6 +454,8 @@ class Builder
 
         $data = $this->driver->get();
 
+        $this->process($data);
+
         return [
             $total, $totalFiltered, $data
         ];
@@ -442,7 +464,7 @@ class Builder
     /**
      * Processes the data.
      *
-     * @param  mixed $data
+     * @param mixed $data
      * @return array
      */
     protected function process($data)
@@ -458,19 +480,46 @@ class Builder
     }
 
     /**
+     * Error results.
+     *
+     * @return array Including total, total filtered, data, error
+     */
+    protected function errorResults(Exception $e)
+    {
+        logger()->error($e);
+
+        if (config('app.debug')) {
+            return [0, 0, [], sprintf("Exception Message:\n\n%s", $e->getMessage())];
+        } else {
+            return [0, 0, [], 'Server Error'];
+        }
+    }
+
+    /**
+     * Creates new datatable.
+     *
+     * @param int $total Total records
+     * @param int $totalFiltered Total records after filter
+     * @param array $data Records data
+     * @param string|null $error
+     * @return DataTable
+     */
+    protected function make($total, $totalFiltered, array $data, $error = null)
+    {
+        return new DataTable($this->request->draw(), $total, $totalFiltered, $data, $error);
+    }
+
+    /**
      * Builds the datatable.
      *
      * @return DataTable
      */
     public function build()
     {
-        $draw = $this->request->draw();
-        list($total, $totalFiltered, $data) = $this->results();
-
-        $this->process($data);
-
-        return new DataTable(
-            $draw, $total, $totalFiltered, $data
-        );
+        try {
+            return $this->make(...$this->results());
+        } catch (Exception $e) {
+            return $this->make(...$this->errorResults($e));
+        }
     }
 }

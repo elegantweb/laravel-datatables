@@ -20,7 +20,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $draw
+     * @param mixed $draw
      * @return int
      */
     protected function filterDraw($draw)
@@ -39,7 +39,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $start
+     * @param mixed $start
      * @return int|null
      */
     protected function filterStart($start)
@@ -58,7 +58,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $length
+     * @param mixed $length
      * @return int|null
      */
     protected function filterLength($length)
@@ -160,7 +160,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $order
+     * @param mixed $order
      * @return array
      */
     protected function filterOrder($order)
@@ -171,7 +171,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $columns
+     * @param mixed $columns
      * @return array
      */
     protected function filterColumns($columns)
@@ -182,7 +182,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $search
+     * @param mixed $search
      * @return array
      */
     protected function filterSearch($search)
@@ -193,7 +193,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $value
+     * @param mixed $value
      * @return array
      */
     protected function filterOrderValue($value)
@@ -204,7 +204,7 @@ class Request extends BaseRequest
     }
 
     /**
-     * @param  mixed $column
+     * @param mixed $column
      * @return array
      */
     protected function filterColumn($column)

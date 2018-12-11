@@ -57,8 +57,8 @@ class ElequentDriver implements Driver
     /**
      * Indicates if the column is for a relationship.
      *
-     * @param  mixed $query
-     * @param  string $column
+     * @param mixed $query
+     * @param string $column
      * @return bool
      */
     protected function isRelated($query, $column)

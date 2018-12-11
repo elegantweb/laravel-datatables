@@ -3,7 +3,7 @@
 namespace Elegant\DataTables;
 
 use Closure;
-use LogicException;
+use InvalidArgumentException;
 use Elegant\DataTables\Contracts\Driver as DriverContract;
 use Elegant\DataTables\Contracts\Processor as ProcessorContract;
 
@@ -51,8 +51,8 @@ class Factory
     /**
      * Creates new datatable builder.
      *
-     * @param  object $source
-     * @param  ProcessorContract $processor
+     * @param object $source
+     * @param ProcessorContract $processor
      * @return Builder
      */
     public function make($source, ProcessorContract $processor = null)
@@ -63,7 +63,7 @@ class Factory
     /**
      * Resolves processor.
      *
-     * @param  ProcessorContract|null $processor
+     * @param ProcessorContract|null $processor
      * @return ProcessorContract
      */
     protected function resolveProcessor(ProcessorContract $processor)
@@ -102,7 +102,7 @@ class Factory
     /**
      * Finds a driver for the source.
      *
-     * @param  object $source
+     * @param object $source
      * @return Closure
      */
     protected function findDriver($source)
@@ -117,7 +117,7 @@ class Factory
     /**
      * Creates a new driver instance.
      *
-     * @param  object $source
+     * @param object $source
      * @return DriverContract
      */
     protected function createDriver($source)
@@ -125,7 +125,7 @@ class Factory
         if (null === $cb = $this->findDriver($source)) {
             return $cb();
         } else {
-            throw new LogicException("No driver found for class [$class].");
+            throw new InvalidArgumentException("Driver not found for the source.");
         }
     }
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Elegant\DataTables;
+namespace Elegant\DataTables\Drivers;
 
 use Elegant\DataTables\Contracts\Driver;
-use Elegant\DataTables\Concerns\InteractsWithQueryBuilder;
+use Elegant\DataTables\Concerns\Drivers\InteractsWithQueryBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class QueryDriver implements Driver

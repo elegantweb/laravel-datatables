@@ -1,9 +1,9 @@
 <?php
 
-namespace Elegant\DataTables;
+namespace Elegant\DataTables\Drivers;
 
 use Elegant\DataTables\Contracts\Driver;
-use Elegant\DataTables\Concerns\InteractsWithQueryBuilder;
+use Elegant\DataTables\Concerns\Drivers\InteractsWithQueryBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 

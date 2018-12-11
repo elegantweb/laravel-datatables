@@ -1,6 +1,6 @@
 <?php
 
-namespace Elegant\DataTables\Concerns;
+namespace Elegant\DataTables\Drivers\Concerns;
 
 trait InteractsWithQueryBuilder
 {

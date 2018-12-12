@@ -11,9 +11,9 @@ class Builder
     /**
      * Datatable request instance.
      *
-     * @var Driver
+     * @var Request
      */
-    protected $driver;
+    protected $request;
 
     /**
      * Driver to interact with.
@@ -72,28 +72,28 @@ class Builder
     protected $blacklist = [];
 
     /**
-     * User filter.
+     * Custom filter function.
      *
      * @var callable
      */
     protected $filter;
 
     /**
-     * User sort.
+     * Custom sort function.
      *
      * @var callable
      */
     protected $sort;
 
     /**
-     * Enable default filter?
+     * Status of default filter.
      *
      * @var bool
      */
     protected $defaultFilter = true;
 
     /**
-     * Enable default sort?
+     * Status of default sort.
      *
      * @var bool
      */
@@ -275,49 +275,27 @@ class Builder
     }
 
     /**
-     * Enables default filter.
+     * Enables/Disables default sort.
      *
+     * @return bool $value
      * @return $this
      */
-    public function enableDefaultFilter()
+    public function defaultFilter(bool $value)
     {
-        $this->defaultFilter = true;
+        $this->defaultFilter = $value;
 
         return $this;
     }
 
     /**
-     * Disabled default filter.
+     * Enables/Disables default sort.
      *
+     * @return bool $value
      * @return $this
      */
-    public function disableDefaultFilter()
+    public function defaultSort(bool $value)
     {
-        $this->defaultFilter = false;
-
-        return $this;
-    }
-
-    /**
-     * Enables default sort.
-     *
-     * @return $this
-     */
-    public function enableDefaultSort()
-    {
-        $this->defaultSort = true;
-
-        return $this;
-    }
-
-    /**
-     * Disabled default sort.
-     *
-     * @return $this
-     */
-    public function disableDefaultSort()
-    {
-        $this->defaultSort = false;
+        $this->defaultSort = $value;
 
         return $this;
     }

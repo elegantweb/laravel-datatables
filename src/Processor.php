@@ -98,7 +98,7 @@ class Processor implements ProcessorContract
      */
     protected function shouldEscapeColumn($name)
     {
-        return !in_array($name, $this->rawColumns);
+        return !in_array($name, $this->raw);
     }
 
     /**

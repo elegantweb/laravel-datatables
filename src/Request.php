@@ -2,13 +2,28 @@
 
 namespace Elegant\DataTables;
 
-use Illuminate\Http\Request as BaseRequest;
+use Illuminate\Http\Request as HttpRequest;
 
 /**
  * @see https://datatables.net/manual/server-side
  */
-class Request extends BaseRequest
+class Request
 {
+    /**
+     * HTTP request instance.
+     *
+     * @var HttpRequest
+     */
+    protected $request;
+
+    /**
+     * @param HttpRequest $request
+     */
+    public function __construct(HttpRequest $request)
+    {
+        $this->request = $request;
+    }
+
     /**
      * Returns the draw number.
      *
@@ -16,7 +31,7 @@ class Request extends BaseRequest
      */
     public function draw()
     {
-        return $this->filterDraw($this->input('draw'));
+        return $this->filterDraw($this->request->request->input('draw'));
     }
 
     /**
@@ -35,7 +50,7 @@ class Request extends BaseRequest
      */
     public function start()
     {
-        return $this->filterStart($this->input('start'));
+        return $this->filterStart($this->request->input('start'));
     }
 
     /**
@@ -54,7 +69,7 @@ class Request extends BaseRequest
      */
     public function length()
     {
-        return $this->filterLength($this->input('length'));
+        return $this->filterLength($this->request->input('length'));
     }
 
     /**
@@ -90,7 +105,7 @@ class Request extends BaseRequest
      */
     public function search()
     {
-        return $this->filterSearch($request->input('search'));
+        return $this->filterSearch($request->request->input('search'));
     }
 
     /**
@@ -100,7 +115,7 @@ class Request extends BaseRequest
      */
     public function hasSearch()
     {
-        return $this->input('search.value') != '';
+        return $this->request->input('search.value') != '';
     }
 
     /**
@@ -110,7 +125,7 @@ class Request extends BaseRequest
      */
     public function order()
     {
-        return $this->filterOrder($this->input('order'));
+        return $this->filterOrder($this->request->input('order'));
     }
 
     /**
@@ -120,7 +135,7 @@ class Request extends BaseRequest
      */
     public function columns()
     {
-        return $this->filterColumns($this->input('columns'));
+        return $this->filterColumns($this->request->input('columns'));
     }
 
     /**

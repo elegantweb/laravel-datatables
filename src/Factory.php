@@ -125,7 +125,7 @@ class Factory
         if (null === $cb = $this->findDriver($source)) {
             return $cb();
         } else {
-            throw new InvalidArgumentException("Driver not found for the source.");
+            throw new InvalidArgumentException('No driver supported for the source.');
         }
     }
 

@@ -74,6 +74,20 @@ class Model implements JsonSerializable, Jsonable, Arrayable
     protected $blacklist = [];
 
     /**
+     * Status of default filter.
+     *
+     * @var bool
+     */
+    protected $defaultFilter = true;
+
+    /**
+     * Status of default sort.
+     *
+     * @var bool
+     */
+    protected $defaultSort = true;
+
+    /**
      * Datatable factory instance.
      *
      * @var Factory
@@ -145,11 +159,18 @@ class Model implements JsonSerializable, Jsonable, Arrayable
 
         $this->addAddonColumns($builder);
 
+        $this->setCustomFilter($builder);
+        $this->setCustomSort($builder);
+
         $builder->raw($this->raw);
         $builder->include($this->include);
         $builder->exclude($this->exclude);
+
         $builder->whitelist($this->whitelist);
         $builder->blacklist($this->blacklist);
+
+        $builder->defaultFilter($this->defaultFilter);
+        $builder->defaultSort($this->defaultSort);
 
         $dt = $builder->build();
 
@@ -167,6 +188,30 @@ class Model implements JsonSerializable, Jsonable, Arrayable
             if (method_exists($this, $method = sprintf('column%s', Str::studly($name)))) {
                 $builder->add($name, [$this, $method]);
             }
+        }
+    }
+
+    /**
+     * Sets custom filter function if there were any.
+     *
+     * @param Builder $builder
+     */
+    protected function setCustomFilter(Builder $builder)
+    {
+        if (method_exists($this, 'filter')) {
+            $builder->filter([$this, 'filter']);
+        }
+    }
+
+    /**
+     * Sets custom sort function if there were any.
+     *
+     * @param Builder $builder
+     */
+    protected function setCustomSort(Builder $builder)
+    {
+        if (method_exists($this, 'sort')) {
+            $builder->sort([$this, 'sort']);
         }
     }
 

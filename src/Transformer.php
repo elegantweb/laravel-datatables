@@ -13,21 +13,21 @@ class Transformer implements TransformerContract
     protected function transformValue(&$value)
     {
         if ($value instanceof DateTime) {
-            $row[$key] = $value->format('Y-m-d H:i:s');
+            $value = $value->format('Y-m-d H:i:s');
         } else if (is_object($value)) {
-            $row[$key] = (string) $value;
+            $value = (string) $value;
         } else {
-            $row[$key] = $value;
+            $value = $value;
         }
     }
 
     /**
      * @param array $row
      */
-    protected function transformRow(array &$row)
+    protected function transformRow(&$row)
     {
-        foreach ($row as $key => $value) {
-            $row[$key] = $this->transformValue($value);
+        foreach ($row as &$value) {
+            $this->transformValue($value);
         }
     }
 

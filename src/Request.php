@@ -105,7 +105,7 @@ class Request
      */
     public function search()
     {
-        return $this->filterSearch($request->request->input('search'));
+        return $this->filterSearch($this->request->input('search'));
     }
 
     /**

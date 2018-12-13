@@ -78,7 +78,7 @@ trait InteractsWithQueryBuilder
         if ($regex) {
             $query->where($column, 'REGEXP', $value, $boolean);
         } else {
-            $query->where($column, 'LIKE', $value, $boolean);
+            $query->where($column, 'LIKE', "%{$value}%", $boolean);
         }
     }
 

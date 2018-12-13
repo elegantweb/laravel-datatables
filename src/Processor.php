@@ -163,7 +163,7 @@ class Processor implements ProcessorContract
      */
     public function process($records)
     {
-        $this->setupRows($rows = [], $records);
+        $this->setupRows($rows, $records);
 
         return $rows;
     }

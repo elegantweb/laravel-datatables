@@ -2,10 +2,10 @@
 
 namespace Elegant\DataTables\Contracts;
 
-interface Driver
+interface Engine
 {
     /**
-     * Resets the driver.
+     * Resets the engine.
      */
     public function reset();
 

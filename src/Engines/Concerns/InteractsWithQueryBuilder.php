@@ -2,19 +2,22 @@
 
 namespace Elegant\DataTables\Drivers\Concerns;
 
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+
 trait InteractsWithQueryBuilder
 {
     /**
      * Original source we store to reset state.
      *
-     * @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @var QueryBuilder|EloquentBuilder
      */
     protected $original;
 
     /**
      * Source we will get results from.
      *
-     * @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @var QueryBuilder|EloquentBuilder
      */
     protected $source;
 

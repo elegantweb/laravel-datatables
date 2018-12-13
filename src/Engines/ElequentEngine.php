@@ -1,13 +1,13 @@
 <?php
 
-namespace Elegant\DataTables\Drivers;
+namespace Elegant\DataTables\Engines;
 
-use Elegant\DataTables\Contracts\Driver;
-use Elegant\DataTables\Concerns\Drivers\InteractsWithQueryBuilder;
+use Elegant\DataTables\Contracts\Engine;
+use Elegant\DataTables\Concerns\Engines\InteractsWithQueryBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
-class ElequentDriver implements Driver
+class ElequentEngine implements Engine
 {
     use InteractsWithQueryBuilder {
         search as traitSearch;

@@ -2,19 +2,14 @@
 
 namespace Elegant\DataTables;
 
+use Elegant\DataTables\Engines\QueryEngine;
+use Elegant\DataTables\Engines\ElequentEngine;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\ServiceProvider;
 
 class DataTablesServiceProvider extends ServiceProvider
 {
-    /**
-     * Boot the service provider.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-    }
-
     /**
      * Register the service provider.
      *
@@ -35,7 +30,48 @@ class DataTablesServiceProvider extends ServiceProvider
     protected function registerFactory()
     {
         $this->app->singleton('datatables', function ($app) {
-            return new Factory($app->get('datatables.request'));
+            $factory = new Factory($app->get('datatables.request'));
+            $this->registerEngines($factory);
+            return $factory;
+        });
+    }
+
+    /**
+     * Register default engines.
+     *
+     * @param  Factory  $factory
+     * @return void
+     */
+    protected function registerEngines($factory)
+    {
+        foreach (['query', 'elequent'] as $engine) {
+            $this->{'register'.ucfirst($engine).'Engine'}($factory);
+        }
+    }
+
+    /**
+     * Register the query engine.
+     *
+     * @param  Factory  $factory
+     * @return void
+     */
+    protected function registerQueryEngine($factory)
+    {
+        $factory->extend(QueryBuilder::class, function ($source) {
+            return new QueryEngine($source);
+        });
+    }
+
+    /**
+     * Register the elequent engine.
+     *
+     * @param  Factory  $factory
+     * @return void
+     */
+    protected function registerElequentEngine($factory)
+    {
+        $factory->extend(EloquentBuilder::class, function ($source) {
+            return new ElequentEngine($source);
         });
     }
 

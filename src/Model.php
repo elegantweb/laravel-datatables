@@ -243,6 +243,6 @@ class Model implements JsonSerializable, Jsonable, Arrayable
      */
     public function toJson($options = 0)
     {
-        return $this->datatable()->toJson();
+        return $this->datatable()->toJson($options);
     }
 }

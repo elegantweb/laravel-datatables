@@ -3,7 +3,7 @@
 namespace Elegant\DataTables;
 
 use Exception;
-use Elegant\DataTables\Contracts\Driver;
+use Elegant\DataTables\Contracts\Engine;
 use Elegant\DataTables\Contracts\Processor;
 
 class Builder
@@ -16,11 +16,11 @@ class Builder
     protected $request;
 
     /**
-     * Driver to interact with.
+     * Engine to interact with.
      *
-     * @var Driver
+     * @var Engine
      */
-    protected $driver;
+    protected $engine;
 
     /**
      * Processor to interact with.
@@ -101,13 +101,13 @@ class Builder
 
     /**
      * @param Request $request
-     * @param Driver $driver
+     * @param Engine $engine
      * @param Processor $processor
      */
-    public function __construct(Request $request, Driver $driver, Processor $processor)
+    public function __construct(Request $request, Engine $engine, Processor $processor)
     {
         $this->request = $request;
-        $this->driver = $driver;
+        $this->engine = $engine;
         $this->processor = $processor;
     }
 
@@ -135,19 +135,19 @@ class Builder
 
 
     /**
-     * Returns the driver.
+     * Returns the engine.
      *
-     * @return Driver
+     * @return Engine
      */
-    public function getDriver()
+    public function getEngine()
     {
-        return $this->driver;
+        return $this->engine;
     }
 
     /**
      * Returns the processor.
      *
-     * @return Driver
+     * @return Engine
      */
     public function getProcessor()
     {
@@ -368,15 +368,15 @@ class Builder
     protected function applyFilter()
     {
         if ($this->defaultFilter and $this->request->hasSearch()) {
-            $this->driver->globalFilter($this->request->search(), $this->searchableColumns());
+            $this->engine->globalFilter($this->request->search(), $this->searchableColumns());
         }
 
         if ($this->defaultFilter) {
-             $this->driver->columnFilter($this->searchColumns());
+             $this->engine->columnFilter($this->searchColumns());
         }
 
         if ($this->filter) {
-            $this->driver->call($this->filter);
+            $this->engine->call($this->filter);
         }
     }
 
@@ -386,11 +386,11 @@ class Builder
     protected function applySort()
     {
         if ($this->defaultSort) {
-            $this->driver->sort($this->request->order(), $this->orderableColumns());
+            $this->engine->sort($this->request->order(), $this->orderableColumns());
         }
 
         if ($this->sort) {
-            $this->driver->call($this->sort);
+            $this->engine->call($this->sort);
         }
     }
 
@@ -400,7 +400,7 @@ class Builder
     protected function applyPaging()
     {
         if ($this->request->hasPaging()) {
-            $this->driver->paginate($this->request->start(), $this->request->length());
+            $this->engine->paginate($this->request->start(), $this->request->length());
         }
     }
 
@@ -411,9 +411,9 @@ class Builder
      */
     protected function results()
     {
-        $this->driver->reset();
+        $this->engine->reset();
 
-        $total = $this->driver->count();
+        $total = $this->engine->count();
 
         if (0 === $total) {
             return [0, 0, []];
@@ -421,7 +421,7 @@ class Builder
 
         $this->applyFilter();
 
-        $totalFiltered = $this->driver->count();
+        $totalFiltered = $this->engine->count();
 
         if (0 === $totalFiltered) {
             return [$total, 0, []];
@@ -430,7 +430,7 @@ class Builder
         $this->applySort();
         $this->applyPaging();
 
-        $data = $this->driver->get();
+        $data = $this->engine->get();
 
         $this->process($data);
 

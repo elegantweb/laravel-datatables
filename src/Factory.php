@@ -4,7 +4,7 @@ namespace Elegant\DataTables;
 
 use Closure;
 use InvalidArgumentException;
-use Elegant\DataTables\Contracts\Driver as DriverContract;
+use Elegant\DataTables\Contracts\Engine as EngineContract;
 use Elegant\DataTables\Contracts\Processor as ProcessorContract;
 
 class Factory
@@ -17,11 +17,11 @@ class Factory
     protected $request;
 
     /**
-     * Driver creators.
+     * Engine creators.
      *
      * @var array
      */
-    protected $drivers = [];
+    protected $engines = [];
 
     /**
      * Default processor.
@@ -57,7 +57,7 @@ class Factory
      */
     public function make($source, ProcessorContract $processor = null)
     {
-        return new Builder($this->request, $this->createDriver($source), $this->resolveProcessor($processor));
+        return new Builder($this->request, $this->createEngine($source), $this->resolveProcessor($processor));
     }
 
     /**
@@ -100,14 +100,14 @@ class Factory
     }
 
     /**
-     * Finds a driver for the source.
+     * Finds a engine for the source.
      *
      * @param object $source
      * @return Closure
      */
-    protected function findDriver($source)
+    protected function findEngine($source)
     {
-        foreach ($this->drivers as $class => $cb) {
+        foreach ($this->engines as $class => $cb) {
             if ($source instanceof $class) {
                 return $cb;
             }
@@ -115,28 +115,28 @@ class Factory
     }
 
     /**
-     * Creates a new driver instance.
+     * Creates a new engine instance.
      *
      * @param object $source
-     * @return DriverContract
+     * @return EngineContract
      */
-    protected function createDriver($source)
+    protected function createEngine($source)
     {
-        if (null === $cb = $this->findDriver($source)) {
-            return $cb();
+        if (null === $cb = $this->findEngine($source)) {
+            return $cb($source);
         } else {
-            throw new InvalidArgumentException('No driver supported for the source.');
+            throw new InvalidArgumentException('No engine supported for the source.');
         }
     }
 
     /**
-     * Registers a custom driver creator.
+     * Registers a custom engine creator.
      *
      * @param string $class
      * @param Closure $callback
      */
     public function extend($class, Closure $callback)
     {
-        $this->drivers[$class] = $callback;
+        $this->engines[$class] = $callback;
     }
 }

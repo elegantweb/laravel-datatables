@@ -19,7 +19,7 @@ class DataTablesServiceProvider extends ServiceProvider
     {
         Model::setFactory($this->app['datatables']);
 
-        $this->registerEngines();
+        $this->registerEngines($this->app['datatables']);
     }
 
     /**

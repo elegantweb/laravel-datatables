@@ -1,6 +1,6 @@
 <?php
 
-namespace Elegant\DataTables\Drivers\Concerns;
+namespace Elegant\DataTables\Engines\Concerns;
 
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -87,8 +87,8 @@ trait InteractsWithQueryBuilder
      */
     public function sort($order, array $columns)
     {
-        foreach ($this->order as $order) {
-            $this->order($this->source, $columns[$order['column']]['name'], $order['dir']);
+        foreach ($order as $value) {
+            $this->order($this->source, $columns[$value['column']]['name'], $value['dir']);
         }
     }
 

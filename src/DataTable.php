@@ -98,8 +98,8 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
     {
         $arr = [];
         $arr['draw'] = $this->draw;
-        $arr['recordsTotal'] = $this->draw;
-        $arr['recordsFiltered'] = $this->recordsFiltered;
+        $arr['recordsTotal'] = $this->total;
+        $arr['recordsFiltered'] = $this->totalFiltered;
         $arr['data'] = $this->data;
         if ($this->error) $arr['error'] = $this->error;
         return $arr;

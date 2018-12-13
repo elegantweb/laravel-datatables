@@ -31,7 +31,7 @@ class Request
      */
     public function draw()
     {
-        return $this->filterDraw($this->request->request->input('draw'));
+        return $this->filterDraw($this->request->input('draw'));
     }
 
     /**
@@ -145,7 +145,7 @@ class Request
      */
     public function searchableColumns()
     {
-        return array_filter($this->columns(), function () {
+        return array_filter($this->columns(), function ($column) {
             return $column['searchable'];
         });
     }
@@ -157,7 +157,7 @@ class Request
      */
     public function orderableColumns()
     {
-        return array_filter($this->columns(), function () {
+        return array_filter($this->columns(), function ($column) {
             return $column['orderable'];
         });
     }
@@ -169,7 +169,7 @@ class Request
      */
     public function searchColumns()
     {
-        return array_filter($this->searchableColumns(), function () {
+        return array_filter($this->searchableColumns(), function ($column) {
             return $column['search']['value'] != '';
         });
     }
@@ -180,9 +180,7 @@ class Request
      */
     protected function filterOrder($order)
     {
-        return array_walk($order, function (&$value) {
-            $value = $this->filterOrderValue($value);
-        });
+        return array_map([$this, 'filterOrderValue'], $order);
     }
 
     /**
@@ -191,9 +189,7 @@ class Request
      */
     protected function filterColumns($columns)
     {
-        return array_walk($columns, function (&$column) {
-            $column = $this->filterColumn($column);
-        });
+        return array_map([$this, 'filterColumn'], $columns);
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Elegant\DataTables\Engines;
 
 use Elegant\DataTables\Contracts\Engine;
-use Elegant\DataTables\Concerns\Engines\InteractsWithQueryBuilder;
+use Elegant\DataTables\Engines\Concerns\InteractsWithQueryBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 

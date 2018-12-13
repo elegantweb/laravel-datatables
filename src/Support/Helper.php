@@ -15,14 +15,14 @@ class Helper
      * @param bool $escape
      * @return mixed
      */
-    protected function resolveData($data, array $params = [], $escape = true)
+    public static function resolveData($data, array $params = [], $escape = true)
     {
-        if ($data instanceof Coluser) {
-            $data = $data(...$params);
+        if (is_callable($data)) {
+            $data = call_user_func_array($data, $params);
         }
         // No need to escape blade data, so just return the content
         else {
-            return $this->resolveBladeData($data, $params);
+            return static::resolveBladeData($data, $params);
         }
 
         if ($escape) {

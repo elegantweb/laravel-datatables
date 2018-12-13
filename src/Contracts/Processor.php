@@ -37,10 +37,10 @@ interface Processor
     public function exclude(array $names);
 
     /**
-     * Processes the data.
+     * Processes the records.
      *
-     * @param mixed $data
+     * @param mixed $records
      * @return array
      */
-    public function process($data);
+    public function process($records);
 }

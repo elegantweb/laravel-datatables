@@ -66,7 +66,7 @@ class Factory
      * @param ProcessorContract|null $processor
      * @return ProcessorContract
      */
-    protected function resolveProcessor(ProcessorContract $processor)
+    protected function resolveProcessor(?ProcessorContract $processor)
     {
         if (is_null($processor)) {
             return $this->getDefaultProcessor();
@@ -123,9 +123,9 @@ class Factory
     protected function createEngine($source)
     {
         if (null === $cb = $this->findEngine($source)) {
-            return $cb($source);
-        } else {
             throw new InvalidArgumentException('No engine supported for the source.');
+        } else {
+            return $cb($source);
         }
     }
 

@@ -30,6 +30,13 @@ class Builder
     protected $processor;
 
     /**
+     * Transformer to interact with.
+     *
+     * @var Transformer
+     */
+    protected $transformer;
+
+    /**
      * Columns that should be added to final result.
      *
      * @var array
@@ -103,12 +110,14 @@ class Builder
      * @param Request $request
      * @param Engine $engine
      * @param Processor $processor
+     * @param Transformer $transformer
      */
-    public function __construct(Request $request, Engine $engine, Processor $processor)
+    public function __construct(Request $request, Engine $engine, Processor $processor, Transformer $transformer)
     {
         $this->request = $request;
         $this->engine = $engine;
         $this->processor = $processor;
+        $this->transformer = $transformer;
     }
 
     /**
@@ -147,11 +156,21 @@ class Builder
     /**
      * Returns the processor.
      *
-     * @return Engine
+     * @return Processor
      */
     public function getProcessor()
     {
         return $this->processor;
+    }
+
+    /**
+     * Returns the transformer.
+     *
+     * @return Transformer
+     */
+    public function getTransformer()
+    {
+        return $this->transformer;
     }
 
     /**
@@ -430,9 +449,11 @@ class Builder
         $this->applySort();
         $this->applyPaging();
 
-        $data = $this->engine->get();
+        $records = $this->engine->get();
 
-        $this->process($data);
+        $data = $this->process($records);
+
+        $this->transform($data);
 
         return [
             $total, $totalFiltered, $data
@@ -440,21 +461,31 @@ class Builder
     }
 
     /**
-     * Processes the data.
+     * Processes the records.
      *
-     * @param mixed $data
+     * @param mixed $records
      * @return array
      */
-    protected function process($data)
+    protected function process($records)
     {
         $this->processor->add($this->addon);
         $this->processor->raw($this->raw);
         $this->processor->include($this->include);
         $this->processor->exclude($this->exclude);
 
-        $data = $this->processor->process($data);
+        $data = $this->processor->process($records);
 
         return $data;
+    }
+
+    /**
+     * Transforms the data.
+     *
+     * @param array $data
+     */
+    protected function transform(&$data)
+    {
+        $this->transformer->transform($data);
     }
 
     /**
@@ -467,7 +498,7 @@ class Builder
         logger()->error($e);
 
         if (config('app.debug')) {
-            return [0, 0, [], sprintf("Exception Message:\n\n%s", $e->getMessage())];
+            throw $e;
         } else {
             return [0, 0, [], 'Server Error'];
         }

@@ -105,11 +105,11 @@ class Processor implements ProcessorContract
      * Sets up the source columns at the row.
      *
      * @param array $row
-     * @param array $record
+     * @param mixed $record
      */
-    protected function setupSourceColumns(&$row, array $record)
+    protected function setupSourceColumns(&$row, $record)
     {
-        $columns = array_dot($record);
+        $columns = array_dot(Helper::convertToArray($record));
 
         foreach ($columns as $name => $value) {
             if ($this->isColumnRequired($name)) {
@@ -122,7 +122,7 @@ class Processor implements ProcessorContract
      * Sets up the addon columns at the row.
      *
      * @param array $row
-     * @param array $record
+     * @param mixed $record
      */
     protected function setupAddonColumns(&$row, $record)
     {
@@ -149,9 +149,9 @@ class Processor implements ProcessorContract
      * Sets up rows.
      *
      * @param array $rows
-     * @param array $records
+     * @param mixed $records
      */
-    protected function setupRows(&$rows, array $records)
+    protected function setupRows(&$rows, $records)
     {
         foreach ($records as $record) {
             $this->setupRow($rows[], $record);
@@ -161,11 +161,9 @@ class Processor implements ProcessorContract
     /**
      * @inheritdoc
      */
-    public function process($data)
+    public function process($records)
     {
-        $rows = [];
-
-        $this->setupRows($rows, Heleper::convertToArray($data));
+        $this->setupRows($rows = [], $records);
 
         return $rows;
     }

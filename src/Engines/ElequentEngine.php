@@ -7,7 +7,7 @@ use Elegant\DataTables\Concerns\Engines\InteractsWithQueryBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
-class ElequentEngine implements Engine
+class EloquentEngine implements Engine
 {
     use InteractsWithQueryBuilder {
         search as traitSearch;

@@ -3,13 +3,25 @@
 namespace Elegant\DataTables;
 
 use Elegant\DataTables\Engines\QueryEngine;
-use Elegant\DataTables\Engines\ElequentEngine;
+use Elegant\DataTables\Engines\EloquentEngine;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\ServiceProvider;
 
 class DataTablesServiceProvider extends ServiceProvider
 {
+    /**
+     * Bootstrap the service provider.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Model::setFactory($this->app['datatables']);
+
+        $this->registerEngines();
+    }
+
     /**
      * Register the service provider.
      *
@@ -30,9 +42,7 @@ class DataTablesServiceProvider extends ServiceProvider
     protected function registerFactory()
     {
         $this->app->singleton('datatables', function ($app) {
-            $factory = new Factory($app->get('datatables.request'));
-            $this->registerEngines($factory);
-            return $factory;
+            return new Factory($app->get('datatables.request'));
         });
     }
 
@@ -44,8 +54,8 @@ class DataTablesServiceProvider extends ServiceProvider
      */
     protected function registerEngines($factory)
     {
-        foreach (['query', 'elequent'] as $engine) {
-            $this->{'register'.ucfirst($engine).'Engine'}($factory);
+        foreach (['query', 'eloquent'] as $engine) {
+            $this->{'register'.ucfirst($engine).'Engine'}($this->app['datatables']);
         }
     }
 
@@ -63,15 +73,15 @@ class DataTablesServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the elequent engine.
+     * Register the eloquent engine.
      *
      * @param  Factory  $factory
      * @return void
      */
-    protected function registerElequentEngine($factory)
+    protected function registerEloquentEngine($factory)
     {
         $factory->extend(EloquentBuilder::class, function ($source) {
-            return new ElequentEngine($source);
+            return new EloquentEngine($source);
         });
     }
 

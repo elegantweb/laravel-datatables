@@ -107,11 +107,11 @@ class Model implements JsonSerializable, Jsonable, Arrayable
     /**
      * Returns the factory instance.
      *
-     * @param Factory $factory
+     * @return Factory
      */
-    public static function setFactory(Factory $factory)
+    public static function getFactory()
     {
-        static::$factory = $factory;
+        return static::$factory;
     }
 
     /**

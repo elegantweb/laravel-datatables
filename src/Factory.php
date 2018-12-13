@@ -136,7 +136,7 @@ class Factory
      *
      * @param TransformerContract $transformer
      */
-    public function setDefaultProcessor(TransformerContract $transformer)
+    public function setDefaultTransformer(TransformerContract $transformer)
     {
         $this->transformer = $transformer;
     }

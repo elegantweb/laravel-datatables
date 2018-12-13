@@ -6,6 +6,7 @@ use Closure;
 use InvalidArgumentException;
 use Elegant\DataTables\Contracts\Engine as EngineContract;
 use Elegant\DataTables\Contracts\Processor as ProcessorContract;
+use Elegant\DataTables\Contracts\Transformer as TransformerContract;
 
 class Factory
 {
@@ -31,6 +32,13 @@ class Factory
     protected $processor;
 
     /**
+     * Default transformer.
+     *
+     * @var TransformerContract|null
+     */
+    protected $transformer;
+
+    /**
      * @param Request $request
      */
     public function __construct(Request $request)
@@ -53,11 +61,20 @@ class Factory
      *
      * @param object $source
      * @param ProcessorContract $processor
+     * @param TransformerContract $transformer
      * @return Builder
      */
-    public function make($source, ProcessorContract $processor = null)
-    {
-        return new Builder($this->request, $this->createEngine($source), $this->resolveProcessor($processor));
+    public function make(
+        $source,
+        ProcessorContract $processor = null,
+        TransformerContract $transformer = null
+    ) {
+        return new Builder(
+            $this->getRequest(),
+            $this->createEngine($source),
+            $this->resolveProcessor($processor),
+            $this->resolveTransformer($transformer)
+        );
     }
 
     /**
@@ -96,6 +113,45 @@ class Factory
             return new Processor();
         } else {
             return $this->processor;
+        }
+    }
+
+    /**
+     * Resolves transformer.
+     *
+     * @param TransformerContract|null $transformer
+     * @return TransformerContract
+     */
+    protected function resolveTransformer(?TransformerContract $transformer)
+    {
+        if (is_null($transformer)) {
+            return $this->getDefaultTransformer();
+        } else {
+            return $transformer;
+        }
+    }
+
+    /**
+     * Sets the default transformer.
+     *
+     * @param TransformerContract $transformer
+     */
+    public function setDefaultProcessor(TransformerContract $transformer)
+    {
+        $this->transformer = $transformer;
+    }
+
+    /**
+     * Returns the default transformer.
+     *
+     * @return ProcessorContract
+     */
+    public function getDefaultTransformer()
+    {
+        if (is_null($this->transformer)) {
+            return new Transformer();
+        } else {
+            return $this->transformer;
         }
     }
 

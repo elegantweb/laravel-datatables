@@ -65,8 +65,10 @@ class EloquentEngine implements Engine
     {
         list($relation,) = explode('.', $column);
 
-        if (method_exists($query, $relation)) {
-            return $query->{$relation}() instanceof Relation;
+        $model = $query->getModel();
+
+        if (method_exists($model, $relation)) {
+            return $model->{$relation}() instanceof Relation;
         } else {
             return false;
         }

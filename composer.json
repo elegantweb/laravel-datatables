@@ -29,7 +29,10 @@
         "laravel": {
             "providers": [
                 "Elegant\\DataTables\\DataTablesServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "DataTables": "Elegant\\DataTables\\Support\\Facades\\DataTables"
+            }
         }
     }
 }

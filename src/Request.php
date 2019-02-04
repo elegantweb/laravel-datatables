@@ -95,7 +95,7 @@ class Request
      */
     public function hasPaging()
     {
-        return $this->start() && $this->length();
+        return null !== $this->start() && null !== $this->length();
     }
 
     /**

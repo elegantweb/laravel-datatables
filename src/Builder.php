@@ -382,6 +382,18 @@ class Builder
     }
 
     /**
+     * Returns safe order columns.
+     *
+     * @return array
+     */
+    protected function orderColumns()
+    {
+        return array_filter($this->request->orderColumns(), function ($column) {
+            return $this->isSafe($column['name']);
+        });
+    }
+
+    /**
      * Applies filter.
      */
     protected function applyFilter()
@@ -413,7 +425,7 @@ class Builder
     protected function applySort()
     {
         if ($this->defaultSort) {
-            $this->engine->sort($this->request->order(), $this->orderableColumns());
+            $this->engine->sort($this->orderColumns());
         }
 
         if ($this->sort) {

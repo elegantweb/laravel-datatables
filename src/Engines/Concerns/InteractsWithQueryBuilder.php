@@ -83,10 +83,10 @@ trait InteractsWithQueryBuilder
     /**
      * @inheritdoc
      */
-    public function sort($order, array $columns)
+    public function sort(array $columns)
     {
-        foreach ($order as $value) {
-            $this->order($this->source, $columns[$value['column']]['name'], $value['dir']);
+        foreach ($columns as $column) {
+            $this->order($this->source, $column['name'], $column['order']['dir']);
         }
     }
 

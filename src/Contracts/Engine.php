@@ -30,12 +30,11 @@ interface Engine
     public function columnFilter(array $columns);
 
     /**
-     * Applies sort.
+     * Applies sort to the provided columns.
      *
-     * @param array $order
      * @param array $columns
      */
-    public function sort(array $order, array $columns);
+    public function sort(array $columns);
 
     /**
      * Applies pagination.

@@ -105,7 +105,7 @@ class Request
      */
     public function search()
     {
-        return $this->filterSearch($this->request->input('search'));
+        return $this->resolveSearch($this->request->input('search'));
     }
 
     /**
@@ -115,7 +115,7 @@ class Request
      */
     public function hasSearch()
     {
-        return $this->request->input('search.value') != '';
+        return null !== $this->search();
     }
 
     /**
@@ -125,7 +125,7 @@ class Request
      */
     public function order()
     {
-        return $this->filterOrder($this->request->input('order'));
+        return $this->resolveOrder($this->request->input('order'));
     }
 
     /**
@@ -135,7 +135,7 @@ class Request
      */
     public function columns()
     {
-        return $this->filterColumns($this->request->input('columns'));
+        return $this->resolveColumns($this->request->input('columns'));
     }
 
     /**
@@ -170,26 +170,90 @@ class Request
     public function searchColumns()
     {
         return array_filter($this->searchableColumns(), function ($column) {
-            return $column['search']['value'] != '';
+            return isset($column['search']);
         });
     }
 
     /**
-     * @param mixed $order
+     * Returns columns that have order.
+     *
      * @return array
      */
-    protected function filterOrder($order)
+    public function orderColumns()
     {
-        return array_map([$this, 'filterOrderValue'], $order);
+        return array_filter($this->orderableColumns(), function ($column) {
+            return isset($column['order']);
+        });
     }
 
     /**
+     * Resolves search.
+     *
+     * @param mixed $search
+     * @return array
+     */
+    protected function resolveSearch($search)
+    {
+        if (is_array($search) and isset($search['value'], $search['regex'])) {
+            return $this->filterSearch($search);
+        }
+    }
+
+    /**
+     * Resolves order.
+     *
+     * @param mixed $order
+     * @return array
+     */
+    protected function resolveOrder($order)
+    {
+        if (is_array($order)) {
+            return $this->filterOrder($order);
+        }
+    }
+
+    /**
+     * Resolves columns.
+     *
      * @param mixed $columns
      * @return array
      */
-    protected function filterColumns($columns)
+    protected function resolveColumns($columns)
     {
-        return array_map([$this, 'filterColumn'], $columns);
+        if (is_array($columns)) {
+            return $this->filterColumns($columns);
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * Resolves column.
+     *
+     * @param mixed $column
+     * @param int $index
+     * @return array
+     */
+    protected function resolveColumn($column, $index)
+    {
+        if (is_array($column) and isset($column['data'], $column['searchable'], $column['orderable'], $column['search'])) {
+            return $this->filterColumn($column, $index);
+        }
+    }
+
+    /**
+     * Resolves column order.
+     *
+     * @param int $index
+     * @return array|null
+     */
+    protected function resolveColumnOrder($index)
+    {
+        foreach ($this->order() as $i => $value) {
+            if ($i == $index) {
+                return $value;
+            }
+        }
     }
 
     /**
@@ -204,6 +268,15 @@ class Request
     }
 
     /**
+     * @param mixed $order
+     * @return array
+     */
+    protected function filterOrder($order)
+    {
+        return array_map([$this, 'filterOrderValue'], $order);
+    }
+
+    /**
      * @param mixed $value
      * @return array
      */
@@ -215,15 +288,26 @@ class Request
     }
 
     /**
-     * @param mixed $column
+     * @param mixed $columns
      * @return array
      */
-    protected function filterColumn($column)
+    protected function filterColumns($columns)
     {
-        $column['name'] = empty($column['name']) ? $column['data'] : $column['name'];
+        return array_filter(array_map([$this, 'resolveColumn'], $columns, array_keys($columns)));
+    }
+
+    /**
+     * @param mixed $column
+     * @param int $index
+     * @return array
+     */
+    protected function filterColumn($column, $index)
+    {
+        $column['name'] = $column['name'] ?? $column['data'];
         $column['searchable'] = filter_var($column['searchable'], FILTER_VALIDATE_BOOLEAN);
         $column['orderable'] = filter_var($column['orderable'], FILTER_VALIDATE_BOOLEAN);
-        $column['search'] = $this->filterSearch($column['search']);
+        $column['search'] = $this->resolveSearch($column['search']);
+        $column['order'] = $this->resolveColumnOrder($index);
 
         return $column;
     }

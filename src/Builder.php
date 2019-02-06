@@ -400,6 +400,14 @@ class Builder
     }
 
     /**
+     * Applies select.
+     */
+    protected function applySelect()
+    {
+        $this->engine->select($this->request->columns());
+    }
+
+    /**
      * Applies sort.
      */
     protected function applySort()
@@ -446,6 +454,7 @@ class Builder
             return [$total, 0, []];
         }
 
+        $this->applySelect();
         $this->applySort();
         $this->applyPaging();
 
@@ -491,14 +500,15 @@ class Builder
     /**
      * Error results.
      *
+     * @param Exception $exception
      * @return array Including total, total filtered, data, error
      */
-    protected function errorResults(Exception $e)
+    protected function errorResults(Exception $exception)
     {
-        logger()->error($e);
+        logger()->error($exception);
 
         if (config('app.debug')) {
-            throw $e;
+            throw $exception;
         } else {
             return [0, 0, [], 'Server Error'];
         }

@@ -30,12 +30,13 @@ trait InteractsWithQueryBuilder
     }
 
     /**
-     * @inheritdoc
+     * Qualify the given column name by the table.
+     *
+     * @param mixed $query
+     * @param string $column
+     * @return string
      */
-    public function count()
-    {
-        return $this->source->count();
-    }
+    abstract protected function qualifyColumn($query, $column);
 
     /**
      * @inheritdoc
@@ -70,15 +71,12 @@ trait InteractsWithQueryBuilder
      */
     protected function search($query, $column, $value, $regex = false, $boolean = 'or')
     {
-        // It contains dot so it is a JSON reference
-        if (str_contains($column, '.')) {
-            $column = str_replace('.', '->', $column);
-        }
+        $column = $this->resolveJsonColumn($column);
 
         if ($regex) {
-            $query->where($column, 'REGEXP', $value, $boolean);
+            $query->where($this->qualifyColumn($query, $column), 'REGEXP', $value, $boolean);
         } else {
-            $query->where($column, 'LIKE', "%{$value}%", $boolean);
+            $query->where($this->qualifyColumn($query, $column), 'LIKE', "%{$value}%", $boolean);
         }
     }
 
@@ -101,7 +99,20 @@ trait InteractsWithQueryBuilder
      */
     protected function order($query, $column, $dir)
     {
-        $query->orderBy($column, $dir);
+        $query->orderBy($this->qualifyColumn($query, $this->resolveJsonColumn($column)), $dir);
+    }
+
+    /**
+     * @param string $column
+     * @return string
+     */
+    protected function resolveJsonColumn($column)
+    {
+        if (str_contains($column, '.')) {
+            return str_replace('.', '->', $column);
+        } else {
+            return $column;
+        }
     }
 
     /**
@@ -110,6 +121,14 @@ trait InteractsWithQueryBuilder
     public function paginate($start, $length)
     {
         $this->source->offset($start)->limit($length);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function count()
+    {
+        return $this->source->count();
     }
 
     /**

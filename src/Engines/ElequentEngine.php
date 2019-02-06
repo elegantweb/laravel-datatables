@@ -2,15 +2,21 @@
 
 namespace Elegant\DataTables\Engines;
 
+use RuntimeException;
 use Elegant\DataTables\Contracts\Engine;
 use Elegant\DataTables\Engines\Concerns\InteractsWithQueryBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EloquentEngine implements Engine
 {
     use InteractsWithQueryBuilder {
         search as traitSearch;
+        order as traitOrder;
     }
 
     /**
@@ -20,6 +26,22 @@ class EloquentEngine implements Engine
     {
         $this->original = $source;
         $this->source = clone $source;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function select(array $columns)
+    {
+        $this->source->addSelect($this->qualifyColumn($this->source, '*'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function qualifyColumn($query, $column)
+    {
+        return $query->qualifyColumn($column);
     }
 
     /**
@@ -47,11 +69,130 @@ class EloquentEngine implements Engine
     {
         list($relation, $column) = explode('.', $column, 2);
 
-        $method = 'or' === $boolean ? 'orWhereHas' : 'whereHas';
-
-        $query->{$method}($relation, function ($query) use ($column, $value, $regex) {
+        $query->has($relation, '>=', 1, $boolean, function ($query) use ($column, $value, $regex) {
             $this->search($query, $column, $value, $regex, 'and');
         });
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function order($query, $column, $dir)
+    {
+        if ($this->isRelated($query, $column)) {
+            $this->orderRelated($query, $column, $dir);
+        } else {
+            $this->traitOrder($query, $column, $dir);
+        }
+    }
+
+    /**
+     * Orders the related column.
+     *
+     * @param mixed  $query
+     * @param string $column Column name
+     * @param string $dir
+     */
+    protected function orderRelated($query, $column, $dir)
+    {
+        $model = $query->getModel();
+
+        resolve:
+
+        list($relation, $column) = explode('.', $column, 2);
+
+        $model = $model->{$relation}();
+
+        $this->joinRelated($query, $model);
+
+        if ($this->isRelated($model->getQuery(), $column)) {
+            goto resolve;
+        } else {
+            $query->orderBy(sprintf('%s.%s', $model->getRelated()->getTable(), $this->resolveJsonColumn($column)), $dir);
+        }
+    }
+
+    /**
+     * Checks soft deletes on the model.
+     *
+     * @param object $model
+     * @return bool
+     */
+    protected function checkSoftDeletes($model)
+    {
+        if (in_array(SoftDeletes::class, class_uses($model))) {
+            return $model->getQualifiedDeletedAtColumn();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Joins the relation.
+     *
+     * @param mixed $query
+     * @param mixed $model
+     */
+    protected function joinRelated($query, $model)
+    {
+        switch (true) {
+            case $model instanceof BelongsToMany:
+                $pivot = $model->getTable();
+                $pivotPk = $model->getExistenceCompareKey();
+                $pivotFk = $model->getQualifiedParentKeyName();
+                $this->join($pivot, $pivotPk, $pivotFk);
+
+                $related = $model->getRelated();
+                $table = $related->getTable();
+                $foreign = sprintf('%s.%s', $pivot, $related->getForeignKey());
+                $other = $related->getQualifiedKeyName();
+                $softDeletes = $this->checkSoftDeletesOnModel($related);
+                $this->join($table, $foreign, $other, $softDeletes);
+                break;
+            case $model instanceof HasOneOrMany:
+                $related = $model->getRelated();
+                $table = $related->getTable();
+                $foreign = $model->getQualifiedForeignKeyName();
+                $other = $model->getQualifiedParentKeyName();
+                $softDeletes = $this->checkSoftDeletesOnModel($related);
+                $this->join($query, $table, $foreign, $other, $softDeletes);
+                break;
+            case $model instanceof BelongsTo:
+                $related = $model->getRelated();
+                $table = $related->getTable();
+                $foreign = $model->getQualifiedForeignKey();
+                $other = $model->getQualifiedOwnerKeyName();
+                $softDeletes = $this->checkSoftDeletes($related);
+                $this->join($query, $table, $foreign, $other, $softDeletes);
+                break;
+            default:
+                throw new RuntimeException('Relation ['.get_class($model).'] is not yet supported.');
+        }
+    }
+
+    /**
+     * Performs join.
+     *
+     * @param string $table
+     * @param string $foreign
+     * @param string $other
+     * @param string|false $softDeletes
+     * @param string $type
+     */
+    protected function join($query, $table, $foreign, $other, $softDeletes = false)
+    {
+        $joins = [];
+        foreach ((array) $query->getQuery()->joins as $key => $join) {
+            $joins[] = $join->table;
+        }
+
+        if (!in_array($table, $joins)) {
+            $query->leftJoin($table, $foreign, $other);
+        }
+
+        if (false !== $softDeletes) {
+            $query->whereNull($softDeletes);
+        }
     }
 
     /**

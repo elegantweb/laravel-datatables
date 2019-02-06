@@ -18,4 +18,24 @@ class QueryEngine implements Engine
         $this->original = $source;
         $this->source = clone $source;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function select(array $columns)
+    {
+        // PASS
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function qualifyColumn($query, $column)
+    {
+        if (str_contains($column, '.')) {
+            return $column;
+        } else {
+            return sprintf('%s.%s', $query->from, $column);
+        }
+    }
 }

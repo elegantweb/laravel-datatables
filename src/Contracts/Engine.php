@@ -10,11 +10,9 @@ interface Engine
     public function reset();
 
     /**
-     * Counts data.
-     *
-     * @return int
+     * Select data.
      */
-    public function count();
+    public function select(array $columns);
 
     /**
      * Applies filter to all columns.
@@ -46,6 +44,13 @@ interface Engine
      * @param int $length
      */
     public function paginate($start, $length);
+
+    /**
+     * Counts data.
+     *
+     * @return int
+     */
+    public function count();
 
     /**
      * Returns data.

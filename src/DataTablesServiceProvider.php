@@ -6,6 +6,7 @@ use Elegant\DataTables\Engines\QueryEngine;
 use Elegant\DataTables\Engines\EloquentEngine;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 class DataTablesServiceProvider extends ServiceProvider
@@ -82,6 +83,10 @@ class DataTablesServiceProvider extends ServiceProvider
     {
         $factory->extend(EloquentBuilder::class, function ($source) {
             return new EloquentEngine($source);
+        });
+
+        $factory->extend(Relation::class, function ($source) {
+            return new EloquentEngine($source->getQuery());
         });
     }
 

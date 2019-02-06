@@ -209,6 +209,8 @@ class Request
     {
         if (is_array($order)) {
             return $this->filterOrder($order);
+        } else {
+            return [];
         }
     }
 
@@ -249,8 +251,8 @@ class Request
      */
     protected function resolveColumnOrder($index)
     {
-        foreach ($this->order() as $i => $value) {
-            if ($i == $index) {
+        foreach ($this->order() as $value) {
+            if ($value['column'] == $index) {
                 return $value;
             }
         }

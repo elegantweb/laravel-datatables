@@ -49,7 +49,9 @@ class EloquentEngine implements Engine
      */
     protected function search($query, $column, $value, $regex, $boolean = 'or')
     {
-        if ($this->isRelated($query, $column)) {
+        $model = $query->getModel();
+
+        if ($this->isRelated($model, $column)) {
             $this->searchRelated($query, $column, $value, $regex, $boolean);
         } else {
             $this->traitSearch($query, $column, $value, $regex, $boolean);
@@ -79,7 +81,9 @@ class EloquentEngine implements Engine
      */
     protected function order($query, $column, $dir)
     {
-        if ($this->isRelated($query, $column)) {
+        $model = $query->getModel();
+
+        if ($this->isRelated($model, $column)) {
             $this->orderRelated($query, $column, $dir);
         } else {
             $this->traitOrder($query, $column, $dir);
@@ -97,18 +101,20 @@ class EloquentEngine implements Engine
     {
         $model = $query->getModel();
 
-        resolve:
+        order:
 
         list($relation, $column) = explode('.', $column, 2);
 
-        $model = $model->{$relation}();
+        $relation = $model->{$relation}();
 
-        $this->joinRelated($query, $model);
+        $this->joinRelated($query, $relation);
 
-        if ($this->isRelated($model->getQuery(), $column)) {
-            goto resolve;
+        $model = $relation->getRelated();
+
+        if ($this->isRelated($model, $column)) {
+            goto order;
         } else {
-            $query->orderBy(sprintf('%s.%s', $model->getRelated()->getTable(), $this->resolveJsonColumn($column)), $dir);
+            $query->orderBy($model->qualifyColumn($this->resolveJsonColumn($column)), $dir);
         }
     }
 
@@ -198,15 +204,13 @@ class EloquentEngine implements Engine
     /**
      * Indicates if the column is for a relationship.
      *
-     * @param mixed $query
+     * @param mixed $model
      * @param string $column
      * @return bool
      */
-    protected function isRelated($query, $column)
+    protected function isRelated($model, $column)
     {
         list($relation,) = explode('.', $column);
-
-        $model = $query->getModel();
 
         if (method_exists($model, $relation)) {
             return $model->{$relation}() instanceof Relation;

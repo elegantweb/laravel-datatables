@@ -45,7 +45,7 @@ trait InteractsWithQueryBuilder
     {
         $this->source->where(function ($query) use ($search, $columns) {
             foreach ($columns as $key => $column) {
-                $this->search($query, $column['name'], $search['value'], $search['regex']);
+                $this->filter($query, $column, $search, 'or');
             }
         });
     }
@@ -56,27 +56,44 @@ trait InteractsWithQueryBuilder
     public function columnFilter(array $columns)
     {
         foreach ($columns as $key => $column) {
-            $this->search($this->source, $column['name'], $column['search']['value'], $column['search']['regex'], 'and');
+            $this->filter($this->source, $column, $column['search'], 'and');
+        }
+    }
+
+    /**
+     * Applies filter to the column.
+     *
+     * @param mixed $query
+     * @param array $column
+     * @param array $search
+     * @param string $boolean
+     */
+    protected function filter($query, $column, $search, $boolean = 'or')
+    {
+        if (isset($column['filter'])) {
+            $this->callCustomFilter($this->source, $column['filter'], $search['value'], $boolean);
+        } else {
+            $this->search($this->source, $column['name'], $search['value'], $column['search']['regex'], $boolean);
         }
     }
 
     /**
      * Searches using the column at the source.
      *
-     * @param mixed  $query
-     * @param string $column Column name
+     * @param mixed $query
+     * @param string $name Column name
      * @param string $value
-     * @param bool   $regex
+     * @param bool $regex
      * @param string $boolean
      */
-    protected function search($query, $column, $value, $regex = false, $boolean = 'or')
+    protected function search($query, $name, $value, $regex = false, $boolean = 'or')
     {
-        $column = $this->resolveJsonColumn($column);
+        $name = $this->qualifyColumn($query, $this->resolveJsonColumn($name));
 
         if ($regex) {
-            $query->where($this->qualifyColumn($query, $column), 'REGEXP', $value, $boolean);
+            $query->where($name, 'REGEXP', $value, $boolean);
         } else {
-            $query->where($this->qualifyColumn($query, $column), 'LIKE', "%{$value}%", $boolean);
+            $query->where($name, 'LIKE', "%{$value}%", $boolean);
         }
     }
 
@@ -86,7 +103,11 @@ trait InteractsWithQueryBuilder
     public function sort(array $columns)
     {
         foreach ($columns as $column) {
-            $this->order($this->source, $column['name'], $column['order']['dir']);
+            if (isset($column['sort'])) {
+                $this->callCustomSort($this->source, $column['sort'], $column['order']['dir']);
+            } else {
+                $this->order($this->source, $column['name'], $column['order']['dir']);
+            }
         }
     }
 
@@ -94,24 +115,24 @@ trait InteractsWithQueryBuilder
      * Orders the column at the source.
      *
      * @param mixed $query
-     * @param array $column
-     * @param array $order
+     * @param string $name Column name
+     * @param string $dir
      */
-    protected function order($query, $column, $dir)
+    protected function order($query, $name, $dir)
     {
-        $query->orderBy($this->qualifyColumn($query, $this->resolveJsonColumn($column)), $dir);
+        $query->orderBy($this->qualifyColumn($query, $this->resolveJsonColumn($name)), $dir);
     }
 
     /**
-     * @param string $column
+     * @param string $name
      * @return string
      */
-    protected function resolveJsonColumn($column)
+    protected function resolveJsonColumn($name)
     {
-        if (str_contains($column, '.')) {
-            return str_replace('.', '->', $column);
+        if (str_contains($name, '.')) {
+            return str_replace('.', '->', $name);
         } else {
-            return $column;
+            return $name;
         }
     }
 
@@ -145,5 +166,29 @@ trait InteractsWithQueryBuilder
     public function call(callable $callable)
     {
         call_user_func($callable, $this->source);
+    }
+
+    /**
+     * Calls the custom filter function.
+     *
+     * @param mixed $query
+     * @param callable $filter
+     * @param string $dir
+     */
+    protected function callCustomFilter($query, callable $filter, $value, $boolean)
+    {
+        $query->whereNested(function ($query) use ($filter, $value) { call_user_func($filter, $query, $value); }, $boolean);
+    }
+
+    /**
+     * Calls the custom sort function.
+     *
+     * @param mixed $query
+     * @param callable $sort
+     * @param string $dir
+     */
+    protected function callCustomSort($query, callable $sort, $dir)
+    {
+        call_user_func($sort, $query, $value);
     }
 }

@@ -79,6 +79,20 @@ class Builder
     protected $blacklist = [];
 
     /**
+     * Enable default filter functions?
+     *
+     * @var bool
+     */
+    protected $defaultFilters = true;
+
+    /**
+     * Enable default sort functions?
+     *
+     * @var bool
+     */
+    protected $defaultSorts = true;
+
+    /**
      * Custom filter function.
      *
      * @var callable
@@ -93,18 +107,18 @@ class Builder
     protected $sort;
 
     /**
-     * Status of default filter.
+     * Custom filter functions for columns.
      *
-     * @var bool
+     * @var array
      */
-    protected $defaultFilter = true;
+    protected $columnFilters = [];
 
     /**
-     * Status of default sort.
+     * Custom sort functions for columns.
      *
-     * @var bool
+     * @var array
      */
-    protected $defaultSort = true;
+    protected $columnSorts = [];
 
     /**
      * @param Request $request
@@ -294,27 +308,27 @@ class Builder
     }
 
     /**
-     * Enables/Disables default sort.
+     * Enables/Disables default filter functions.
      *
      * @return bool $value
      * @return $this
      */
-    public function defaultFilter(bool $value)
+    public function defaultFilters(bool $value)
     {
-        $this->defaultFilter = $value;
+        $this->defaultFilters = $value;
 
         return $this;
     }
 
     /**
-     * Enables/Disables default sort.
+     * Enables/Disables default sort functions.
      *
      * @return bool $value
      * @return $this
      */
-    public function defaultSort(bool $value)
+    public function defaultSorts(bool $value)
     {
-        $this->defaultSort = $value;
+        $this->defaultSorts = $value;
 
         return $this;
     }
@@ -346,15 +360,46 @@ class Builder
     }
 
     /**
+     * Sets custom filter function for the column.
+     *
+     * @param string $name Column name
+     * @param callable $callback
+     * @return $this
+     */
+    public function columnFilter($name, callable $callback)
+    {
+        $this->columnFilters[$name] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Sets custom sort function for the column.
+     *
+     * @param string $name Column name
+     * @param callable $callback
+     * @return $this
+     */
+    public function columnSort($name, callable $callback)
+    {
+        $this->columnSorts[$name] = $callback;
+
+        return $this;
+    }
+
+    /**
      * Returns safe searchable columns.
      *
      * @return array
      */
     protected function searchableColumns()
     {
-        return array_filter($this->request->searchableColumns(), function ($column) {
-            return $this->isSafe($column['name']);
-        });
+        $columns = $this->request->searchableColumns();
+
+        $this->addCustomSorts($columns);
+        $this->filterSafeColumns($columns);
+
+        return $columns;
     }
 
     /**
@@ -364,9 +409,12 @@ class Builder
      */
     protected function searchColumns()
     {
-        return array_filter($this->request->searchColumns(), function ($column) {
-            return $this->isSafe($column['name']);
-        });
+        $columns = $this->request->searchColumns();
+
+        $this->addCustomFilters($columns);
+        $this->filterSafeColumns($columns);
+
+        return $columns;
     }
 
     /**
@@ -376,9 +424,12 @@ class Builder
      */
     protected function orderableColumns()
     {
-        return array_filter($this->request->orderableColumns(), function ($column) {
-            return $this->isSafe($column['name']);
-        });
+        $columns = $this->request->orderableColumns();
+
+        $this->addCustomSorts($columns);
+        $this->filterSafeColumns($columns);
+
+        return $columns;
     }
 
     /**
@@ -388,7 +439,46 @@ class Builder
      */
     protected function orderColumns()
     {
-        return array_filter($this->request->orderColumns(), function ($column) {
+        $columns = $this->request->orderColumns();
+
+        $this->addCustomSorts($columns);
+        $this->filterSafeColumns($columns);
+
+        return $columns;
+    }
+
+    /**
+     * Adds custom column filters to the column collection.
+     *
+     * @param array $columns
+     */
+    protected function addCustomFilters(&$columns)
+    {
+        foreach ($columns as &$column) {
+            $column['filter'] = $this->columnFilters[$column['name']] ?? null;
+        }
+    }
+
+    /**
+     * Adds custom column sorts to the column collection.
+     *
+     * @param array $columns
+     */
+    protected function addCustomSorts(&$columns)
+    {
+        foreach ($columns as &$column) {
+            $column['sort'] = $this->columnSorts[$column['name']] ?? null;
+        }
+    }
+
+    /**
+     * Filters safe columns.
+     *
+     * @param array $columns
+     */
+    protected function filterSafeColumns(&$columns)
+    {
+        $columns = array_filter($columns, function ($column) {
             return $this->isSafe($column['name']);
         });
     }
@@ -398,12 +488,12 @@ class Builder
      */
     protected function applyFilter()
     {
-        if ($this->defaultFilter and $this->request->hasSearch()) {
+        if ($this->defaultFilters and $this->request->hasSearch()) {
             $this->engine->globalFilter($this->request->search(), $this->searchableColumns());
         }
 
-        if ($this->defaultFilter) {
-             $this->engine->columnFilter($this->searchColumns());
+        if ($this->defaultFilters) {
+            $this->engine->columnFilter($this->searchColumns());
         }
 
         if ($this->filter) {
@@ -424,7 +514,7 @@ class Builder
      */
     protected function applySort()
     {
-        if ($this->defaultSort) {
+        if ($this->defaultSorts) {
             $this->engine->sort($this->orderColumns());
         }
 

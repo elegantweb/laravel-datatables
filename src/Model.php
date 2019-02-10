@@ -78,14 +78,28 @@ class Model implements JsonSerializable, Jsonable, Arrayable
      *
      * @var bool
      */
-    protected $defaultFilter = true;
+    protected $defaultFilters = true;
 
     /**
      * Status of default sort.
      *
      * @var bool
      */
-    protected $defaultSort = true;
+    protected $defaultSorts = true;
+
+    /**
+     * Columns that have custom filter function.
+     *
+     * @var array
+     */
+    protected $filters = [];
+
+    /**
+     * Columns that have custom sort function.
+     *
+     * @var array
+     */
+    protected $sorts = [];
 
     /**
      * Datatable factory instance.
@@ -159,8 +173,11 @@ class Model implements JsonSerializable, Jsonable, Arrayable
 
         $this->addAddonColumns($builder);
 
-        $this->setCustomFilter($builder);
-        $this->setCustomSort($builder);
+        $this->setFilter($builder);
+        $this->setSort($builder);
+
+        $this->setColumnFilters($builder);
+        $this->setColumnSorts($builder);
 
         $builder->raw($this->raw);
         $builder->include($this->include);
@@ -169,8 +186,8 @@ class Model implements JsonSerializable, Jsonable, Arrayable
         $builder->whitelist($this->whitelist);
         $builder->blacklist($this->blacklist);
 
-        $builder->defaultFilter($this->defaultFilter);
-        $builder->defaultSort($this->defaultSort);
+        $builder->defaultFilters($this->defaultFilters);
+        $builder->defaultSorts($this->defaultSorts);
 
         $dt = $builder->build();
 
@@ -196,7 +213,7 @@ class Model implements JsonSerializable, Jsonable, Arrayable
      *
      * @param Builder $builder
      */
-    protected function setCustomFilter(Builder $builder)
+    protected function setFilter(Builder $builder)
     {
         if (method_exists($this, 'filter')) {
             $builder->filter([$this, 'filter']);
@@ -208,10 +225,38 @@ class Model implements JsonSerializable, Jsonable, Arrayable
      *
      * @param Builder $builder
      */
-    protected function setCustomSort(Builder $builder)
+    protected function setSort(Builder $builder)
     {
         if (method_exists($this, 'sort')) {
             $builder->sort([$this, 'sort']);
+        }
+    }
+
+    /**
+     * Sets columns' custom filter functions.
+     *
+     * @param Builder $builder
+     */
+    protected function setColumnFilters(Builder $builder)
+    {
+        foreach ($this->filters as $name) {
+            if (method_exists($this, $method = sprintf('column%sFilter', Str::studly(str_replace('.', '_', $name))))) {
+                $builder->columnFilter($name, [$this, $method]);
+            }
+        }
+    }
+
+    /**
+     * Sets columns' custom sort functions.
+     *
+     * @param Builder $builder
+     */
+    protected function setColumnSorts(Builder $builder)
+    {
+        foreach ($this->sorts as $name) {
+            if (method_exists($this, $method = sprintf('column%sSort', Str::studly($name)))) {
+                $builder->columnSort($name, [$this, $method]);
+            }
         }
     }
 

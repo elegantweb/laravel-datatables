@@ -11,6 +11,13 @@ use Illuminate\Contracts\Support\Arrayable;
 class Model implements JsonSerializable, Jsonable, Arrayable
 {
     /**
+     * Datatable factory instance.
+     *
+     * @var Factory
+     */
+    protected static $factory;
+
+    /**
      * Datatable instance.
      *
      * @var DataTable|null
@@ -100,13 +107,6 @@ class Model implements JsonSerializable, Jsonable, Arrayable
      * @var array
      */
     protected $sorts = [];
-
-    /**
-     * Datatable factory instance.
-     *
-     * @var Factory
-     */
-    protected static $factory;
 
     /**
      * @param object $source

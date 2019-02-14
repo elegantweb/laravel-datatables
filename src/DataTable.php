@@ -13,35 +13,35 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
      *
      * @var int
      */
-    protected $draw;
+    public $draw;
 
     /**
      * Total number of records.
      *
      * @var int
      */
-    protected $total;
+    public $total;
 
     /**
      * Total number of records after filter.
      *
      * @var int
      */
-    protected $totalFiltered;
+    public $totalFiltered;
 
     /**
      * Records data.
      *
      * @var array
      */
-    protected $data;
+    public $data;
 
     /**
      * Error.
      *
      * @var string|null
      */
-    protected $error = null;
+    public $error = null;
 
     /**
      * @param int $draw Draw number
@@ -57,36 +57,6 @@ class DataTable implements JsonSerializable, Jsonable, Arrayable
         $this->totalFiltered = $totalFiltered;
         $this->data = $data;
         $this->error = $error;
-    }
-
-    /**
-     * Returns total number of records.
-     *
-     * @return int
-     */
-    public function total()
-    {
-        return $this->total;
-    }
-
-    /**
-     * Returns total number of records after filter.
-     *
-     * @return int
-     */
-    public function totalFiltered()
-    {
-        return $this->totalFiltered;
-    }
-
-    /**
-     * Returns records data.
-     *
-     * @return array
-     */
-    public function data()
-    {
-        return $this->data;
     }
 
     /**

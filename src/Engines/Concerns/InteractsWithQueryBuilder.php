@@ -71,9 +71,9 @@ trait InteractsWithQueryBuilder
     protected function filter($query, $column, $search, $boolean = 'or')
     {
         if (isset($column['filter'])) {
-            $this->callCustomFilter($this->source, $column['filter'], $search['value'], $boolean);
+            $this->callCustomFilter($query, $column['filter'], $search['value'], $boolean);
         } else {
-            $this->search($this->source, $column['name'], $search['value'], $column['search']['regex'], $boolean);
+            $this->search($query, $column['name'], $search['value'], $column['search']['regex'], $boolean);
         }
     }
 

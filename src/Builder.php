@@ -396,7 +396,7 @@ class Builder
     {
         $columns = $this->request->searchableColumns();
 
-        $this->addCustomSorts($columns);
+        $this->addCustomFilters($columns);
         $this->filterSafeColumns($columns);
 
         return $columns;

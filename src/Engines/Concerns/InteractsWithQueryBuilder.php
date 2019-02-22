@@ -177,7 +177,7 @@ trait InteractsWithQueryBuilder
      */
     protected function callCustomFilter($query, callable $filter, $value, $boolean)
     {
-        $query->whereNested(function ($query) use ($filter, $value) { call_user_func($filter, $query, $value); }, $boolean);
+        $query->where(function ($query) use ($filter, $value) { call_user_func($filter, $query, $value); }, null, null, $boolean);
     }
 
     /**

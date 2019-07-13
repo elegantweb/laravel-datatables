@@ -8,6 +8,13 @@ use Elegant\DataTables\Support\Helper;
 class Processor implements ProcessorContract
 {
     /**
+     * Columns requested by client.
+     *
+     * @var array
+     */
+    protected $requested = [];
+
+    /**
      * Columns that should be added to final result.
      *
      * @var array
@@ -34,6 +41,16 @@ class Processor implements ProcessorContract
      * @var array
      */
     protected $exclude = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function request(array $columns)
+    {
+        $this->requested = $columns;
+
+        return $this;
+    }
 
     /**
      * @inheritdoc
@@ -134,6 +151,21 @@ class Processor implements ProcessorContract
     }
 
     /**
+     * Sets up the requested columns at the row.
+     *
+     * @param array $row
+     * @param mixed $record
+     */
+    protected function setupRequestedColumns(&$row, $record)
+    {
+        foreach ($this->requested as $name) {
+            if (!array_has($row, $name) && $this->isColumnRequired($name)) {
+                array_set($row, $name, '');
+            }
+        }
+    }
+
+    /**
      * Sets up row.
      *
      * @param array $row
@@ -143,6 +175,7 @@ class Processor implements ProcessorContract
     {
         $this->setupSourceColumns($row, $record);
         $this->setupAddonColumns($row, $record);
+        $this->setupRequestedColumns($row, $record);
     }
 
     /**

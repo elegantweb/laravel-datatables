@@ -579,6 +579,7 @@ class Builder
      */
     protected function process($records)
     {
+        $this->processor->request(array_column($this->request->columns(), 'name'));
         $this->processor->add($this->addon);
         $this->processor->raw($this->raw);
         $this->processor->include($this->include);

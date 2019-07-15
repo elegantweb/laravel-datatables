@@ -166,7 +166,7 @@ class EloquentEngine implements Engine
             case $model instanceof BelongsTo:
                 $related = $model->getRelated();
                 $table = $related->getTable();
-                $foreign = $model->getQualifiedForeignKey();
+                $foreign = $model->getQualifiedForeignKeyName();
                 $other = $model->getQualifiedOwnerKeyName();
                 $softDeletes = $this->checkSoftDeletes($related);
                 $this->join($query, $table, $foreign, $other, $softDeletes);

@@ -126,7 +126,7 @@ class Processor implements ProcessorContract
      */
     protected function setupSourceColumns(&$row, $record)
     {
-        $columns = array_dot(Helper::convertToArray($record));
+        $columns = array_filter(array_dot(Helper::convertToArray($record)));
 
         foreach ($columns as $name => $value) {
             if ($this->isColumnRequired($name)) {

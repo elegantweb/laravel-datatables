@@ -251,9 +251,9 @@ class Request
      */
     protected function resolveColumnOrder($index)
     {
-        foreach ($this->order() as $value) {
+        foreach ($this->order() as $key => $value) {
             if ($value['column'] == $index) {
-                return $value;
+                return ['dir' => $value['dir'], 'pri' => $key];
             }
         }
     }

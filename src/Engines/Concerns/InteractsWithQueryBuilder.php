@@ -102,6 +102,9 @@ trait InteractsWithQueryBuilder
      */
     public function sort(array $columns)
     {
+        // apply priority
+        usort($columns, function ($a, $b) { return $a['order']['pri'] <=> $b['order']['pri']; });
+
         foreach ($columns as $column) {
             if (isset($column['sort'])) {
                 $this->callCustomSort($this->source, $column['sort'], $column['order']['dir']);

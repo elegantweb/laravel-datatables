@@ -4,6 +4,7 @@ namespace Elegant\DataTables;
 
 use Elegant\DataTables\Contracts\Processor as ProcessorContract;
 use Elegant\DataTables\Support\Helper;
+use Illuminate\Support\Arr;
 
 class Processor implements ProcessorContract
 {
@@ -126,11 +127,11 @@ class Processor implements ProcessorContract
      */
     protected function setupSourceColumns(&$row, $record)
     {
-        $columns = array_filter(array_dot(Helper::convertToArray($record)));
+        $columns = array_filter(Arr::dot(Helper::convertToArray($record)));
 
         foreach ($columns as $name => $value) {
             if ($this->isColumnRequired($name)) {
-                array_set($row, $name, $this->shouldEscapeColumn($name) ? e($value) : $value);
+                Arr::set($row, $name, $this->shouldEscapeColumn($name) ? e($value) : $value);
             }
         }
     }
@@ -145,7 +146,7 @@ class Processor implements ProcessorContract
     {
         foreach ($this->addon as $name => $data) {
             if ($this->isColumnRequired($name)) {
-                array_set($row, $name, Helper::resolveData($data, compact('record'), $this->shouldEscapeColumn($name)));
+                Arr::set($row, $name, Helper::resolveData($data, compact('record'), $this->shouldEscapeColumn($name)));
             }
         }
     }
@@ -159,8 +160,8 @@ class Processor implements ProcessorContract
     protected function setupRequestedColumns(&$row, $record)
     {
         foreach ($this->requested as $name) {
-            if (!array_has($row, $name) && $this->isColumnRequired($name)) {
-                array_set($row, $name, '');
+            if (!Arr::has($row, $name) and $this->isColumnRequired($name)) {
+                Arr::set($row, $name, '');
             }
         }
     }

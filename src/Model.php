@@ -3,10 +3,10 @@
 namespace Elegant\DataTables;
 
 use JsonSerializable;
-use Illuminate\Support\Str;
 use Elegant\DataTables\Contracts\Processor;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Str;
 
 class Model implements JsonSerializable, Jsonable, Arrayable
 {

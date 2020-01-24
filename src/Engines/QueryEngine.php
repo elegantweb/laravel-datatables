@@ -5,6 +5,7 @@ namespace Elegant\DataTables\Engines;
 use Elegant\DataTables\Contracts\Engine;
 use Elegant\DataTables\Engines\Concerns\InteractsWithQueryBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Str;
 
 class QueryEngine implements Engine
 {
@@ -32,7 +33,7 @@ class QueryEngine implements Engine
      */
     protected function qualifyColumn($query, $column)
     {
-        if (str_contains($column, '.')) {
+        if (Str::contains($column, '.')) {
             return $column;
         } else {
             return sprintf('%s.%s', $query->from, $column);

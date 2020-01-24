@@ -4,6 +4,7 @@ namespace Elegant\DataTables\Engines\Concerns;
 
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Support\Str;
 
 trait InteractsWithQueryBuilder
 {
@@ -132,7 +133,7 @@ trait InteractsWithQueryBuilder
      */
     protected function resolveJsonColumn($name)
     {
-        if (str_contains($name, '.')) {
+        if (Str::contains($name, '.')) {
             return str_replace('.', '->', $name);
         } else {
             return $name;

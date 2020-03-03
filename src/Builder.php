@@ -484,6 +484,30 @@ class Builder
     }
 
     /**
+     * Indicates if we have any custom filter defined by user.
+     *
+     * @return bool
+     */
+    protected function hasCustomFilter()
+    {
+        return null !== $this->filter || !empty($this->columnFilters);
+    }
+
+    /**
+     * Indicates if we have any filter to apply on results.
+     *
+     * @return bool
+     */
+    protected function hasFilter()
+    {
+        if ($this->defaultFilters) {
+            return $this->hasCustomFilter() || $this->request->hasSearch() || $this->request->hasSearchColumns();
+        } else {
+            return $this->hasCustomFilter();
+        }
+    }
+
+    /**
      * Applies filter.
      */
     protected function applyFilter()
@@ -548,9 +572,12 @@ class Builder
             return [0, 0, []];
         }
 
-        $this->applyFilter();
-
-        $totalFiltered = $this->engine->count();
+        // if we don't have any filter, we don't need to count results again
+        if ($this->hasFilter()) {
+            $this->applyFilter(); $totalFiltered = $this->engine->count();
+        } else {
+            $totalFiltered = $total;
+        }
 
         if (0 === $totalFiltered) {
             return [$total, 0, []];

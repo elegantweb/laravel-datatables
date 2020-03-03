@@ -175,6 +175,16 @@ class Request
     }
 
     /**
+     * Indicates if we have search columns.
+     *
+     * @return bool
+     */
+    public function hasSearchColumns()
+    {
+        return !empty($this->searchColumns());
+    }
+
+    /**
      * Returns columns that have order.
      *
      * @return array

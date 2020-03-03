@@ -74,7 +74,7 @@ trait InteractsWithQueryBuilder
         if (isset($column['filter'])) {
             $this->callCustomFilter($query, $column['filter'], $search['value'], $boolean);
         } else {
-            $this->search($query, $column['name'], $search['value'], $column['search']['regex'], $boolean);
+            $this->search($query, $column['name'], $search['value'], $search['regex'], $boolean);
         }
     }
 

@@ -95,14 +95,14 @@ class Builder
     /**
      * Custom filter function.
      *
-     * @var callable
+     * @var callable|null
      */
     protected $filter;
 
     /**
      * Custom sort function.
      *
-     * @var callable
+     * @var callable|null
      */
     protected $sort;
 

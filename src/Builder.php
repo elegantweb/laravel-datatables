@@ -5,6 +5,7 @@ namespace Elegant\DataTables;
 use Exception;
 use Elegant\DataTables\Contracts\Engine;
 use Elegant\DataTables\Contracts\Processor;
+use Elegant\DataTables\Contracts\Transformer;
 
 class Builder
 {

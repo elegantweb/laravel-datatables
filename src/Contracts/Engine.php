@@ -40,9 +40,9 @@ interface Engine
      * Applies pagination.
      *
      * @param int $start
-     * @param int $length
+     * @param int|null $length
      */
-    public function paginate($start, $length);
+    public function paginate($start, $length = null);
 
     /**
      * Counts data.

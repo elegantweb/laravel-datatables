@@ -554,7 +554,7 @@ class Builder
     protected function applyPaging()
     {
         if ($this->request->hasPaging()) {
-            $this->engine->paginate($this->request->start(), $this->request->length());
+            $this->engine->paginate($this->request->start(), $this->request->realLength());
         }
     }
 

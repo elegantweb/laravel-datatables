@@ -9,7 +9,7 @@ use Illuminate\Support\Arr;
 class Processor implements ProcessorContract
 {
     /**
-     * Columns requested by client.
+     * Columns requested by the client.
      *
      * @var array
      */
@@ -152,12 +152,12 @@ class Processor implements ProcessorContract
     }
 
     /**
-     * Sets up the requested columns at the row.
+     * Sets up the requested columns at the row which are not set yet.
      *
      * @param array $row
      * @param mixed $record
      */
-    protected function setupRequestedColumns(&$row, $record)
+    protected function setupUndefinedRequestedColumns(&$row, $record)
     {
         foreach ($this->requested as $name) {
             if (!Arr::has($row, $name) and $this->isColumnRequired($name)) {
@@ -176,7 +176,7 @@ class Processor implements ProcessorContract
     {
         $this->setupSourceColumns($row, $record);
         $this->setupAddonColumns($row, $record);
-        $this->setupRequestedColumns($row, $record);
+        $this->setupUndefinedRequestedColumns($row, $record);
     }
 
     /**

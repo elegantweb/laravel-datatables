@@ -2,7 +2,6 @@
 
 namespace Elegant\DataTables\Support;
 
-use Coluser;
 use Illuminate\Contracts\Support\Arrayable;
 
 class Helper

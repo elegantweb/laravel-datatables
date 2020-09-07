@@ -5,6 +5,14 @@ namespace Elegant\DataTables\Contracts;
 interface Processor
 {
     /**
+     * Sets columns requested by the client.
+     *
+     * @param array $columns
+     * @return $this
+     */
+    public function request(array $columns);
+
+    /**
      * Sets addon columns, addon columns will be added to the result.
      *
      * @param array $columns

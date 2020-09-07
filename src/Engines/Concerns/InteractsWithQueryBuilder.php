@@ -143,9 +143,12 @@ trait InteractsWithQueryBuilder
     /**
      * @inheritdoc
      */
-    public function paginate($start, $length)
+    public function paginate($start, $length = null)
     {
-        $this->source->offset($start)->limit($length);
+        $this->source->offset($start);
+
+        if (isset($length))
+            $this->source->limit($length);
     }
 
     /**

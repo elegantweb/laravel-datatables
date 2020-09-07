@@ -193,6 +193,6 @@ trait InteractsWithQueryBuilder
      */
     protected function callCustomSort($query, callable $sort, $dir)
     {
-        call_user_func($sort, $query, $value);
+        call_user_func($sort, $query, $dir);
     }
 }

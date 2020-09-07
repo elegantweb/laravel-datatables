@@ -14,7 +14,7 @@ class Transformer implements TransformerContract
     {
         if ($value instanceof DateTime) {
             $value = $value->format('Y-m-d H:i:s');
-        } else if (is_object($value)) {
+        } elseif (is_object($value)) {
             $value = (string) $value;
         }
     }

@@ -16,8 +16,6 @@ class Transformer implements TransformerContract
             $value = $value->format('Y-m-d H:i:s');
         } else if (is_object($value)) {
             $value = (string) $value;
-        } else {
-            $value = $value;
         }
     }
 

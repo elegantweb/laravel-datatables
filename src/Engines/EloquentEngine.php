@@ -146,14 +146,14 @@ class EloquentEngine implements Engine
                 $pivot = $model->getTable();
                 $pivotPk = $model->getExistenceCompareKey();
                 $pivotFk = $model->getQualifiedParentKeyName();
-                $this->join($pivot, $pivotPk, $pivotFk);
+                $this->join($query, $pivot, $pivotPk, $pivotFk);
 
                 $related = $model->getRelated();
                 $table = $related->getTable();
                 $foreign = sprintf('%s.%s', $pivot, $related->getForeignKey());
                 $other = $related->getQualifiedKeyName();
                 $softDeletes = $this->checkSoftDeletesOnModel($related);
-                $this->join($table, $foreign, $other, $softDeletes);
+                $this->join($query, $table, $foreign, $other, $softDeletes);
                 break;
             case $model instanceof HasOneOrMany:
                 $related = $model->getRelated();

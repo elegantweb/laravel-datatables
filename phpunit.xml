@@ -11,8 +11,7 @@
 >
     <testsuites>
         <testsuite name="DataTables Test Suite">
-            <directory suffix=".php">./tests/Unit</directory>
-            <directory suffix=".php">./tests/Feature</directory>
+            <directory suffix="Test.php">./tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

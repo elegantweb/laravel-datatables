@@ -2,6 +2,8 @@
 
 namespace Elegant\DataTables\Tests;
 
+use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Elegant\DataTables\DataTablesServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -12,6 +14,10 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+
+        Factory::guessFactoryNamesUsing(function (string $modelName) {
+            return __NAMESPACE__ . '\Database\Factories' . Str::after($modelName, __NAMESPACE__ . '\Fixtures\Models') . 'Factory';
+        });
     }
 
     protected function getPackageProviders($app)

@@ -72,7 +72,7 @@ trait InteractsWithQueryBuilder
     protected function filter($query, $column, $search, $boolean = 'or')
     {
         if (isset($column['filter'])) {
-            $this->callCustomFilter($query, $column['filter'], $search['value'], $boolean);
+            $this->callCustomFilter($query, $column['filter'], $search['value'], $search['regex'], $boolean);
         } else {
             $this->search($query, $column['name'], $search['value'], $search['regex'], $boolean);
         }
@@ -104,7 +104,7 @@ trait InteractsWithQueryBuilder
     public function sort(array $columns)
     {
         // apply priority
-        usort($columns, function ($a, $b) { return $a['order']['pri'] <=> $b['order']['pri']; });
+        usort($columns, fn ($a, $b) => $a['order']['pri'] <=> $b['order']['pri']);
 
         foreach ($columns as $column) {
             if (isset($column['sort'])) {
@@ -180,11 +180,15 @@ trait InteractsWithQueryBuilder
      *
      * @param mixed $query
      * @param callable $filter
-     * @param string $dir
+     * @param string $value
+     * @param string $regex
+     * @param string $boolean
      */
-    protected function callCustomFilter($query, callable $filter, $value, $boolean)
+    protected function callCustomFilter($query, callable $filter, $value, $regex, $boolean)
     {
-        $query->where(function ($query) use ($filter, $value) { call_user_func($filter, $query, $value); }, null, null, $boolean);
+        $query->where(function ($query) use ($filter, $value, $regex) {
+            call_user_func($filter, $query, $value, $regex);
+        }, null, null, $boolean);
     }
 
     /**

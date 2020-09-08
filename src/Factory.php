@@ -59,7 +59,7 @@ class Factory
     /**
      * Creates new datatable builder.
      *
-     * @param object $source
+     * @param mixed $source
      * @param ProcessorContract $processor
      * @param TransformerContract $transformer
      * @return Builder

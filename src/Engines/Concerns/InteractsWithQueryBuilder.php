@@ -72,7 +72,7 @@ trait InteractsWithQueryBuilder
     protected function filter($query, $column, $search, $boolean = 'or')
     {
         if (isset($column['filter'])) {
-            $this->callCustomFilter($query, $column['filter'], $search['value'], $boolean);
+            $this->callCustomFilter($query, $column['filter'], $search['value'], $search['regex'], $boolean);
         } else {
             $this->search($query, $column['name'], $search['value'], $search['regex'], $boolean);
         }
@@ -181,7 +181,9 @@ trait InteractsWithQueryBuilder
      */
     protected function callCustomFilter($query, callable $filter, $value, $boolean)
     {
-        $query->where(function ($query) use ($filter, $value) { call_user_func($filter, $query, $value); }, null, null, $boolean);
+        $query->where(function ($query) use ($filter, $value, $regex) {
+            call_user_func($filter, $query, $value, $regex);
+        }, null, null, $boolean);
     }
 
     /**

@@ -170,7 +170,7 @@ class Processor implements ProcessorContract
      * Sets up row.
      *
      * @param array $row
-     * @param array $record
+     * @param mixed $record
      */
     protected function setupRow(&$row, $record)
     {

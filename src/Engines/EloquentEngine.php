@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 
 class EloquentEngine implements Engine
 {
@@ -59,7 +60,7 @@ class EloquentEngine implements Engine
     }
 
     /**
-     * Searchs for the related column.
+     * Searches for the related column.
      *
      * @param mixed  $query
      * @param string $column Column name
@@ -121,10 +122,10 @@ class EloquentEngine implements Engine
     /**
      * Checks soft deletes on the model.
      *
-     * @param object $model
+     * @param Model $model
      * @return bool
      */
-    protected function checkSoftDeletes($model)
+    protected function checkSoftDeletes(Model $model)
     {
         if (in_array(SoftDeletes::class, class_uses($model))) {
             return $model->getQualifiedDeletedAtColumn();
@@ -152,7 +153,7 @@ class EloquentEngine implements Engine
                 $table = $related->getTable();
                 $foreign = sprintf('%s.%s', $pivot, $related->getForeignKey());
                 $other = $related->getQualifiedKeyName();
-                $softDeletes = $this->checkSoftDeletesOnModel($related);
+                $softDeletes = $this->checkSoftDeletes($related);
                 $this->join($query, $table, $foreign, $other, $softDeletes);
                 break;
             case $model instanceof HasOneOrMany:
@@ -160,7 +161,7 @@ class EloquentEngine implements Engine
                 $table = $related->getTable();
                 $foreign = $model->getQualifiedForeignKeyName();
                 $other = $model->getQualifiedParentKeyName();
-                $softDeletes = $this->checkSoftDeletesOnModel($related);
+                $softDeletes = $this->checkSoftDeletes($related);
                 $this->join($query, $table, $foreign, $other, $softDeletes);
                 break;
             case $model instanceof BelongsTo:
@@ -204,11 +205,11 @@ class EloquentEngine implements Engine
     /**
      * Indicates if the column is for a relationship.
      *
-     * @param mixed $model
+     * @param Model $model
      * @param string $column
      * @return bool
      */
-    protected function isRelated($model, $column)
+    protected function isRelated(Model $model, $column)
     {
         list($relation,) = explode('.', $column);
 

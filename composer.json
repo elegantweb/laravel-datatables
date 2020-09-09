@@ -1,6 +1,6 @@
 {
     "name": "elegantweb/laravel-datatables",
-    "description": "Laravel DataTables library",
+    "description": "DataTables library for the Laravel framework.",
     "type": "library",
     "license": "MIT",
     "authors": [

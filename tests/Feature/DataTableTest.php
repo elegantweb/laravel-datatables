@@ -179,9 +179,9 @@ abstract class DataTableTest extends TestCase
     public function test_can_sort_columns($dir)
     {
         $posts = collect();
-        $posts[] = $this->createPost(['created_at' => '2000-01-05']);
-        $posts[] = $this->createPost(['created_at' => '2010-02-01']);
-        $posts[] = $this->createPost(['created_at' => '2009-12-10']);
+        $posts[] = $this->createPost(['created_at' => '2000-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2020-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2010-01-01']);
 
         $request = [
             'draw' => '1000',
@@ -212,17 +212,20 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    public function test_applies_sort_to_only_orderable_columns()
+    /**
+     * @dataProvider sort_direction_provider
+     */
+    public function test_applies_sort_to_only_orderable_columns($dir)
     {
         $posts = collect();
-        $posts[] = $this->createPost(['created_at' => '2010-01-05']);
-        $posts[] = $this->createPost(['created_at' => '2010-02-01']);
-        $posts[] = $this->createPost(['created_at' => '2009-12-10']);
+        $posts[] = $this->createPost(['created_at' => '2000-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2020-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2010-01-01']);
 
         $request = [
             'draw' => '1000',
             'order' => [
-                ['column' => '0', 'dir' => 'asc']
+                ['column' => '0', 'dir' => $dir]
             ],
             'columns' => [
                 ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'false'],
@@ -252,10 +255,10 @@ abstract class DataTableTest extends TestCase
     public function test_can_sort_multiple_columns($dir)
     {
         $posts = [];
-        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2010-01-05']);
-        $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2010-02-01']);
-        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2009-12-10']);
-        $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2011-08-25']);
+        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2030-01-01']);
+        $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2000-01-01']);
+        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2020-01-01']);
+        $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2010-01-01']);
 
         $request = [
             'draw' => '1000',
@@ -273,13 +276,7 @@ abstract class DataTableTest extends TestCase
 
         $dataTable = DataTables::make($this->getPostSource())->build();
 
-        usort($posts, function ($a, $b) {
-            if ($a['title'] == $b['title']) {
-                return $a['created_at'] <=> $b['created_at'];
-            } else {
-                return $a['title'] <=> $b['title'];
-            }
-        });
+        usort($posts, fn ($a, $b) => ($a['title'] <=> $b['title']) ?: ($a['created_at'] <=> $b['created_at']));
 
         if ($dir === 'desc') {
             $posts = array_reverse($posts);
@@ -538,19 +535,22 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    public function test_does_not_sort_blacklisted_columns()
+    /**
+     * @dataProvider sort_direction_provider
+     */
+    public function test_does_not_sort_blacklisted_columns($dir)
     {
         $posts = collect();
-        $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2000-01-01']);
-        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2010-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2000-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2020-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2010-01-01']);
 
         $request = [
             'draw' => '1000',
             'order' => [
-                ['column' => '1', 'dir' => 'desc'],
+                ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
                 ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
             ],
         ];
@@ -563,8 +563,8 @@ abstract class DataTableTest extends TestCase
 
         $expected = [
             'draw' => 1000,
-            "recordsTotal" => 2,
-            "recordsFiltered" => 2,
+            "recordsTotal" => 3,
+            "recordsFiltered" => 3,
             'data' => $posts->toArray(),
         ];
 
@@ -577,16 +577,15 @@ abstract class DataTableTest extends TestCase
     public function test_does_not_filter_when_default_filtering_is_disabled()
     {
         $posts = collect();
-        $posts[] = $this->createPost(['title' => 'Alpha', 'content' => 'First']);
-        $posts[] = $this->createPost(['title' => 'Beta', 'content' => 'Second']);
-        $posts[] = $this->createPost(['title' => 'Gamma', 'content' => 'Third']);
+        $posts[] = $this->createPost(['title' => 'Alpha']);
+        $posts[] = $this->createPost(['title' => 'Beta']);
+        $posts[] = $this->createPost(['title' => 'Gamma']);
 
         $request = [
             'draw' => '1000',
             'search' => ['value' => 'Alpha', 'regex' => 'false'],
             'columns' => [
                 ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
             ],
         ];
 
@@ -609,19 +608,22 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    public function test_does_not_sort_when_default_sorting_is_disabled()
+    /**
+     * @dataProvider sort_direction_provider
+     */
+    public function test_does_not_sort_when_default_sorting_is_disabled($dir)
     {
         $posts = collect();
-        $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2000-01-01']);
-        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2010-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2000-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2020-01-01']);
+        $posts[] = $this->createPost(['created_at' => '2010-01-01']);
 
         $request = [
             'draw' => '1000',
             'order' => [
-                ['column' => '1', 'dir' => 'desc'],
+                ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
                 ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
             ],
         ];
@@ -634,8 +636,8 @@ abstract class DataTableTest extends TestCase
 
         $expected = [
             'draw' => 1000,
-            "recordsTotal" => 2,
-            "recordsFiltered" => 2,
+            "recordsTotal" => 3,
+            "recordsFiltered" => 3,
             'data' => $posts->toArray(),
         ];
 
@@ -794,8 +796,8 @@ abstract class DataTableTest extends TestCase
     {
         $posts = collect();
         $posts[] = $this->createPost(['title' => 'Alpha', 'created_at' => '2000-01-01']);
-        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2010-01-01']);
-        $posts[] = $this->createPost(['title' => 'Gamma', 'created_at' => '1970-01-01']);
+        $posts[] = $this->createPost(['title' => 'Beta', 'created_at' => '2020-01-01']);
+        $posts[] = $this->createPost(['title' => 'Gamma', 'created_at' => '2010-01-01']);
 
         $request = [
             'draw' => '1000',
@@ -843,10 +845,6 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'start' => '2',
             'length' => '2',
-            'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
-            ],
         ];
 
         request()->replace($request);
@@ -901,13 +899,13 @@ abstract class DataTableTest extends TestCase
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
-        $builder->add('title', function () {
-            return 'custom';
+        $builder->add('title', function ($record) {
+            return strtoupper($record->title);
         });
         $dataTable = $builder->build();
 
         $this->assertEquals(
-            'custom',
+            strtoupper($posts[0]['title']),
             $dataTable->data[0]['title'],
         );
     }
@@ -949,6 +947,155 @@ abstract class DataTableTest extends TestCase
         $this->assertEquals(
             '<b>Test</b>',
             $dataTable->data[0]['content'],
+        );
+    }
+
+    public function test_adds_undefined_requested_columns()
+    {
+        $posts = collect();
+        $posts[] = $this->createPost();
+
+        $request = [
+            'draw' => '1000',
+            'columns' => [
+                ['data' => 'undefined', 'searchable' => 'true', 'orderable' => 'true'],
+            ],
+        ];
+
+        request()->replace($request);
+
+        $dataTable = DataTables::make($this->getPostSource())->build();
+
+        $this->assertEquals(
+            '',
+            $dataTable->data[0]['undefined'],
+        );
+    }
+
+    public function test_can_filter_custom_column_by_name_using_global_search()
+    {
+        $posts = collect();
+        $posts[] = $this->createPost(['title' => 'Alpha']);
+        $posts[] = $this->createPost(['title' => 'Beta']);
+
+        $request = [
+            'draw' => '1000',
+            'search' => ['value' => 'Beta', 'regex' => 'false'],
+            'columns' => [
+                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
+            ],
+        ];
+
+        request()->replace($request);
+
+        $builder = DataTables::make($this->getPostSource());
+        $builder->add('custom', function ($record) {
+            return strtoupper($record->title);
+        });
+        $dataTable = $builder->build();
+
+        $posts = $posts->map(function ($post) {
+            $post['custom'] = strtoupper($post['title']);
+            return $post;
+        });
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 2,
+            "recordsFiltered" => 1,
+            'data' => $posts->only([1])->values()->toArray(),
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
+        );
+    }
+
+    public function test_can_filter_custom_column_by_name_using_column_search()
+    {
+        $posts = collect();
+        $posts[] = $this->createPost(['title' => 'Alpha']);
+        $posts[] = $this->createPost(['title' => 'Beta']);
+
+        $request = [
+            'draw' => '1000',
+            'columns' => [
+                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
+            ],
+        ];
+
+        request()->replace($request);
+
+        $builder = DataTables::make($this->getPostSource());
+        $builder->add('custom', function ($record) {
+            return strtoupper($record->title);
+        });
+        $dataTable = $builder->build();
+
+        $posts = $posts->map(function ($post) {
+            $post['custom'] = strtoupper($post['title']);
+            return $post;
+        });
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 2,
+            "recordsFiltered" => 1,
+            'data' => $posts->only([1])->values()->toArray(),
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
+        );
+    }
+
+    /**
+     * @dataProvider sort_direction_provider
+     */
+    public function test_can_sort_custom_column_by_name($dir)
+    {
+        $posts = collect();
+        $posts[] = $this->createPost(['title' => 'Gamma']);
+        $posts[] = $this->createPost(['title' => 'Alpha']);
+        $posts[] = $this->createPost(['title' => 'Beta']);
+
+        $request = [
+            'draw' => '1000',
+            'order' => [
+                ['column' => '0', 'dir' => $dir],
+            ],
+            'columns' => [
+                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
+            ],
+        ];
+
+        request()->replace($request);
+
+        $builder = DataTables::make($this->getPostSource());
+        $builder->add('custom', function ($record) {
+            return strtoupper($record->title);
+        });
+        $dataTable = $builder->build();
+
+        $posts = $posts->map(function ($post) {
+            $post['custom'] = strtoupper($post['title']);
+            return $post;
+        });
+
+        $posts = $posts->sortBy('title', SORT_REGULAR, $dir === 'desc')->values();
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 3,
+            "recordsFiltered" => 3,
+            'data' => $posts->toArray(),
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
         );
     }
 }

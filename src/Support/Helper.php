@@ -17,7 +17,8 @@ class Helper
     public static function resolveData($data, array $params = [], $escape = true)
     {
         if (is_callable($data)) {
-            $data = call_user_func_array($data, $params);
+            // NOTE: $params does include keys and variable names, but for methods, we don't want to use PHP 8 named arguments, so we just use array_values to fix the problem
+            $data = call_user_func_array($data, array_values($params));
         }
         // No need to escape blade data, so just return the content
         else {

@@ -49,8 +49,8 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'First', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'true'],
+                ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
 
@@ -81,8 +81,8 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'First', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'false', 'orderable' => 'true'],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'false'],
+                ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
 
@@ -113,7 +113,7 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Second', 'regex' => 'false']],
+                ['data' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Second', 'regex' => 'false']],
             ],
         ];
 
@@ -144,7 +144,7 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'false', 'orderable' => 'true', 'search' => ['value' => 'Second', 'regex' => 'false']],
+                ['data' => 'title', 'searchable' => 'false', 'search' => ['value' => 'Second', 'regex' => 'false']],
             ],
         ];
 
@@ -189,7 +189,7 @@ abstract class DataTableTest extends TestCase
                 ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -228,7 +228,7 @@ abstract class DataTableTest extends TestCase
                 ['column' => '0', 'dir' => $dir]
             ],
             'columns' => [
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'false'],
+                ['data' => 'created_at', 'orderable' => 'false'],
             ],
         ];
 
@@ -267,8 +267,8 @@ abstract class DataTableTest extends TestCase
                 ['column' => '1', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'orderable' => 'true'],
+                ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -375,8 +375,8 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'Alpha', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'true'],
+                ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
 
@@ -409,8 +409,8 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'Alpha', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'true'],
+                ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
 
@@ -442,8 +442,8 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
+                ['data' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
+                ['data' => 'content', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
             ],
         ];
 
@@ -475,8 +475,8 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
+                ['data' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
+                ['data' => 'content', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
             ],
         ];
 
@@ -511,8 +511,8 @@ abstract class DataTableTest extends TestCase
                 ['column' => '1', 'dir' => 'desc'],
             ],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'orderable' => 'true'],
+                ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -551,7 +551,7 @@ abstract class DataTableTest extends TestCase
                 ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -585,7 +585,7 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'Alpha', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'true'],
             ],
         ];
 
@@ -624,7 +624,7 @@ abstract class DataTableTest extends TestCase
                 ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -656,8 +656,8 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title'],
+                ['data' => 'content'],
             ],
         ];
 
@@ -693,8 +693,8 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title'],
+                ['data' => 'created_at'],
             ],
         ];
 
@@ -731,8 +731,8 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'Alpha', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'true'],
+                ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
 
@@ -766,8 +766,8 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
-                ['data' => 'content', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
+                ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
 
@@ -805,8 +805,8 @@ abstract class DataTableTest extends TestCase
                 ['column' => '1', 'dir' => 'desc'],
             ],
             'columns' => [
-                ['data' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
-                ['data' => 'created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'title', 'orderable' => 'true'],
+                ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -950,7 +950,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    public function test_adds_undefined_requested_columns()
+    public function test_adds_undefined_but_requested_columns()
     {
         $posts = collect();
         $posts[] = $this->createPost();
@@ -958,7 +958,7 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'undefined', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'undefined'],
             ],
         ];
 
@@ -982,7 +982,7 @@ abstract class DataTableTest extends TestCase
             'draw' => '1000',
             'search' => ['value' => 'Beta', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true'],
             ],
         ];
 
@@ -1021,7 +1021,7 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
+                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
             ],
         ];
 
@@ -1067,7 +1067,7 @@ abstract class DataTableTest extends TestCase
                 ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'custom', 'name' => 'title', 'orderable' => 'true'],
             ],
         ];
 

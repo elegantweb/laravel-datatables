@@ -47,7 +47,7 @@ class EloquentTest extends DataTableTest
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'user.name', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'user.name'],
             ],
         ];
 
@@ -88,7 +88,7 @@ class EloquentTest extends DataTableTest
             'draw' => '1000',
             'search' => ['value' => 'First of Beta', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'posts.0.title', 'name' => 'posts.title', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'posts.0.title', 'name' => 'posts.title', 'searchable' => 'true'],
             ],
         ];
 
@@ -126,7 +126,7 @@ class EloquentTest extends DataTableTest
             'draw' => '1000',
             'search' => ['value' => 'Beta', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'user.name', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'user.name', 'searchable' => 'true'],
             ],
         ];
 
@@ -167,7 +167,7 @@ class EloquentTest extends DataTableTest
             'draw' => '1000',
             'search' => ['value' => 'Beta', 'regex' => 'false'],
             'columns' => [
-                ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true'],
             ],
         ];
 
@@ -207,7 +207,7 @@ class EloquentTest extends DataTableTest
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'posts.0.title', 'name' => 'posts.title', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'First of Beta', 'regex' => 'false']],
+                ['data' => 'posts.0.title', 'name' => 'posts.title', 'searchable' => 'true', 'search' => ['value' => 'First of Beta', 'regex' => 'false']],
             ],
         ];
 
@@ -244,7 +244,7 @@ class EloquentTest extends DataTableTest
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'user.name', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
+                ['data' => 'user.name', 'searchable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
             ],
         ];
 
@@ -284,7 +284,7 @@ class EloquentTest extends DataTableTest
         $request = [
             'draw' => '1000',
             'columns' => [
-                ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
+                ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
             ],
         ];
 
@@ -327,7 +327,7 @@ class EloquentTest extends DataTableTest
                 ['column' => '0', 'dir' => $dir]
             ],
             'columns' => [
-                ['data' => 'posts.0.created_at', 'name' => 'posts.created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'posts.0.created_at', 'name' => 'posts.created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -374,7 +374,7 @@ class EloquentTest extends DataTableTest
                 ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'user.created_at', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'user.created_at', 'orderable' => 'true'],
             ],
         ];
 
@@ -425,7 +425,7 @@ class EloquentTest extends DataTableTest
                 ['column' => '0', 'dir' => $dir],
             ],
             'columns' => [
-                ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true', 'orderable' => 'true'],
+                ['data' => 'categories.0.label', 'name' => 'categories.label', 'orderable' => 'true'],
             ],
         ];
 

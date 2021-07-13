@@ -84,7 +84,7 @@ class RequestTest extends TestCase
         return [
             'valid' => ['1000', 1000],
             'valid special -1' => ['-1', null],
-            'invalid' => ['xxxx', null],
+            'invalid not integer' => ['xxxx', null],
             'invalid negative' => ['-2', null],
             'empty' => [null, null],
         ];
@@ -129,10 +129,11 @@ class RequestTest extends TestCase
     public function global_search_data_provider()
     {
         return [
-            'normal' => [['value' => 'match', 'regex' => 'false'], ['value' => 'match', 'regex' => false]],
-            'regex' => [['value' => '/^match$/', 'regex' => 'true'], ['value' => '/^match$/', 'regex' => true]],
+            'valid normal' => [['value' => 'match', 'regex' => 'false'], ['value' => 'match', 'regex' => false]],
+            'valid regex' => [['value' => '/^match$/', 'regex' => 'true'], ['value' => '/^match$/', 'regex' => true]],
             'invalid no regex' => [['value' => 'match'], null],
             'invalid no value' => [['regex' => 'true'], null],
+            'invalid empty value' => [['value' => '', 'regex' => 'true'], null],
             'empty' => [null, null],
         ];
     }
@@ -152,10 +153,11 @@ class RequestTest extends TestCase
     public function global_search_status_data_provider()
     {
         return [
-            'normal' => [['value' => 'match', 'regex' => 'false'], true],
-            'regex' => [['value' => '/^match$/', 'regex' => 'true'], true],
-            'no regex' => [['value' => 'match'], false],
-            'no value' => [['regex' => 'true'], false],
+            'valid normal' => [['value' => 'match', 'regex' => 'false'], true],
+            'valid regex' => [['value' => '/^match$/', 'regex' => 'true'], true],
+            'invalid no regex' => [['value' => 'match'], false],
+            'invalid no value' => [['regex' => 'true'], false],
+            'invalid empty value' => [['value' => '', 'regex' => 'true'], false],
             'empty' => [null, false],
         ];
     }
@@ -175,13 +177,14 @@ class RequestTest extends TestCase
     public function order_data_provider()
     {
         return [
-            'valid asc' => [[['column' => 'col1', 'dir' => 'asc']], [['column' => 'col1', 'dir' => 'asc']]],
-            'valid desc' => [[['column' => 'col2', 'dir' => 'desc']], [['column' => 'col2', 'dir' => 'desc']]],
-            'invalid' => ['xxxx', []],
-            'invalid children' => [['xxxx', 'xxxx'], []],
-            'without column' => [[['dir' => 'asc']], []],
-            'without dir' => [[['column' => 'col1']], []],
-            'invalid dir' => [[['column' => 'col1', 'dir' => 'xxxx']], []],
+            'valid asc' => [[['column' => '1', 'dir' => 'asc']], [['column' => '1', 'dir' => 'asc']]],
+            'valid desc' => [[['column' => '2', 'dir' => 'desc']], [['column' => '2', 'dir' => 'desc']]],
+            'invalid different type' => ['xxxx', []],
+            'invalid different children type' => [['xxxx', 'xxxx'], []],
+            'invalid without column' => [[['dir' => 'asc']], []],
+            'invalid without dir' => [[['column' => '1']], []],
+            'invalid column value' => [[['column' => 'xxxx', 'dir' => 'asc']], []],
+            'invalid dir value' => [[['column' => '2', 'dir' => 'xxxx']], []],
             'empty' => [null, []],
         ];
     }
@@ -202,34 +205,46 @@ class RequestTest extends TestCase
     {
         $data = [];
 
-        $data['without search and order'] = [
-            [[]],
+        $data['valid only data'] = [
+            null, // we don't need order here
+            [['data' => 'title']],
+            [['data' => 'title', 'name' => 'title', 'searchable' => false, 'orderable' => false, 'search' => null, 'order' => null]],
+        ];
+
+        $data['valid with empty name'] = [
+            null, // we don't need order here
+            [['data' => 'title', 'name' => '']],
+            [['data' => 'title', 'name' => 'title', 'searchable' => false, 'orderable' => false, 'search' => null, 'order' => null]],
+        ];
+
+        $data['valid without search and order'] = [
+            null, // we don't need order here
             [['data' => 'title', 'name' => 'heading', 'searchable' => 'true', 'orderable' => 'false']],
             [['data' => 'title', 'name' => 'heading', 'searchable' => true, 'orderable' => false, 'search' => null, 'order' => null]],
         ];
 
-        $data['with search and order'] = [
+        $data['valid with search and order'] = [
             [['column' => '0', 'dir' => 'asc']],
             [['data' => 'title', 'name' => 'heading', 'searchable' => 'false', 'orderable' => 'true', 'search' => ['value' => 'match', 'regex' => 'true']]],
             [['data' => 'title', 'name' => 'heading', 'searchable' => false, 'orderable' => true, 'search' => ['value' => 'match', 'regex' => true], 'order' => ['dir' => 'asc', 'pri' => 0]]],
         ];
 
-        $data['without name'] = [
-            [[]],
-            [['data' => 'title', 'searchable' => 'false', 'orderable' => 'true']],
-            [['data' => 'title', 'name' => 'title', 'searchable' => false, 'orderable' => true, 'search' => null, 'order' => null]],
-        ];
-
-        $data['invalid'] = [
-            [],
+        $data['invalid different type'] = [
+            null, // we don't need order here
             'xxxx',
-            [],
+            [], // expected
         ];
 
-        $data['invalid children'] = [
-            [],
+        $data['invalid different children type'] = [
+            null, // we don't need order here
             [['xxxx']],
-            [],
+            [], // expected
+        ];
+
+        $data['invalid empty data'] = [
+            null, // we don't need order here
+            [['data' => '']],
+            [], // expected
         ];
 
         $data['empty'] = [
@@ -246,7 +261,7 @@ class RequestTest extends TestCase
      */
     public function test_cen_detect_columns($order, $columns, $expected)
     {
-        $httpRequest = $this->cerateHttpRequest(['order' => $order, 'columns' => $columns]);
+        $httpRequest = $this->cerateHttpRequest(compact('order', 'columns'));
 
         $request = new Request($httpRequest);
 
@@ -256,9 +271,9 @@ class RequestTest extends TestCase
     public function test_can_detect_searchable_columns()
     {
         $columns = [];
-        $columns[] = ['data' => 'id', 'searchable' => 'false', 'orderable' => 'true'];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'false'];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
+        $columns[] = ['data' => 'id', 'searchable' => 'false'];
+        $columns[] = ['data' => 'id', 'searchable' => 'true'];
+        $columns[] = ['data' => 'id', 'searchable' => 'true'];
 
         $httpRequest = $this->cerateHttpRequest(['columns' => $columns]);
 
@@ -273,9 +288,9 @@ class RequestTest extends TestCase
     public function test_can_detect_orderable_columns()
     {
         $columns = [];
-        $columns[] = ['data' => 'id', 'searchable' => 'false', 'orderable' => 'true'];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'false'];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
+        $columns[] = ['data' => 'id', 'orderable' => 'true'];
+        $columns[] = ['data' => 'id', 'orderable' => 'false'];
+        $columns[] = ['data' => 'id', 'orderable' => 'true'];
 
         $httpRequest = $this->cerateHttpRequest(['columns' => $columns]);
 
@@ -290,11 +305,11 @@ class RequestTest extends TestCase
     public function test_can_detect_search_columns()
     {
         $columns = [];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'match', 'regex' => 'true']];
-        $columns[] = ['data' => 'id', 'searchable' => 'false', 'orderable' => 'true', 'search' => ['value' => 'match', 'regex' => 'true']];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => 'match']];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true', 'search' => ['regex' => 'true']];
-        $columns[] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
+        $columns[] = ['data' => 'id', 'searchable' => 'true', 'search' => ['value' => 'match', 'regex' => 'true']];
+        $columns[] = ['data' => 'id', 'searchable' => 'false', 'search' => ['value' => 'match', 'regex' => 'true']];
+        $columns[] = ['data' => 'id', 'searchable' => 'true', 'search' => ['value' => 'match']];
+        $columns[] = ['data' => 'id', 'searchable' => 'true', 'search' => ['regex' => 'true']];
+        $columns[] = ['data' => 'id', 'searchable' => 'true'];
 
         $httpRequest = $this->cerateHttpRequest(['columns' => $columns]);
 
@@ -316,11 +331,11 @@ class RequestTest extends TestCase
         $order[] = ['column' => '4'];
 
         $columns = [];
-        $columns[0] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
-        $columns[1] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'false'];
-        $columns[2] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
-        $columns[3] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
-        $columns[4] = ['data' => 'id', 'searchable' => 'true', 'orderable' => 'true'];
+        $columns[0] = ['data' => 'id', 'orderable' => 'true'];
+        $columns[1] = ['data' => 'id', 'orderable' => 'false'];
+        $columns[2] = ['data' => 'id', 'orderable' => 'true'];
+        $columns[3] = ['data' => 'id', 'orderable' => 'true'];
+        $columns[4] = ['data' => 'id', 'orderable' => 'true'];
 
         $httpRequest = $this->cerateHttpRequest(['order' => $order, 'columns' => $columns]);
 

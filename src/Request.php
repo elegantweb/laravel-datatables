@@ -135,7 +135,7 @@ class Request
      */
     protected function resolveSearch($search)
     {
-        if (is_array($search) and isset($search['value'], $search['regex'])) {
+        if (is_array($search) and isset($search['value'], $search['regex']) and '' != $search['value']) {
             return $this->filterSearch($search);
         }
     }
@@ -191,9 +191,20 @@ class Request
      */
     protected function resolveOrderValue($value)
     {
-        if (is_array($value) and isset($value['column'], $value['dir']) and in_array($value['dir'], ['asc', 'desc'])) {
-            return $value;
+        if (is_array($value) and isset($value['column'], $value['dir']) and is_numeric($value['column']) and in_array($value['dir'], ['asc', 'desc'])) {
+            return $this->filterOrderValue($value);
         }
+    }
+
+    /**
+     * @param array $value
+     * @return array|null
+     */
+    protected function filterOrderValue(array $value)
+    {
+        $value['column'] = filter_var($value['column'], FILTER_VALIDATE_INT);
+
+        return $value;
     }
 
     /**
@@ -297,7 +308,7 @@ class Request
      */
     protected function resolveColumn($column, $index)
     {
-        if (is_array($column) and isset($column['data'], $column['searchable'], $column['orderable'])) {
+        if (is_array($column) and isset($column['data']) and '' != $column['data']) {
             return $this->filterColumn($column, $index);
         }
     }
@@ -309,9 +320,9 @@ class Request
      */
     protected function filterColumn(array $column, $index)
     {
-        $column['name'] ??= $column['data'];
-        $column['searchable'] = filter_var($column['searchable'], FILTER_VALIDATE_BOOLEAN);
-        $column['orderable'] = filter_var($column['orderable'], FILTER_VALIDATE_BOOLEAN);
+        $column['name'] = isset($column['name']) && '' != $column['name'] ? $column['name'] : $column['data'];
+        $column['searchable'] = isset($column['searchable']) ? filter_var($column['searchable'], FILTER_VALIDATE_BOOLEAN) : false;
+        $column['orderable'] = isset($column['orderable']) ? filter_var($column['orderable'], FILTER_VALIDATE_BOOLEAN) : false;
         $column['search'] = isset($column['search']) ? $this->resolveSearch($column['search']) : null;
         $column['order'] = $this->findColumnOrder($index);
 

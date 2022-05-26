@@ -275,7 +275,7 @@ class Model implements JsonSerializable, Jsonable, Arrayable
      *
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->datatable()->jsonSerialize();
     }

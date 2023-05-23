@@ -31,6 +31,7 @@ abstract class TestCase extends BaseTestCase
             __DIR__ . '/resources/views',
         ]);
 
+        $app['config']->set('app.debug', true);
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
             'driver' => 'sqlite',

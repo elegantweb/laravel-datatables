@@ -5,7 +5,7 @@ namespace Elegant\DataTables\Engines;
 use RuntimeException;
 use Elegant\DataTables\Contracts\Engine;
 use Elegant\DataTables\Engines\Concerns\InteractsWithQueryBuilder;
-use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,9 +21,9 @@ class EloquentEngine implements Engine
     }
 
     /**
-     * @param QueryBuilder $source
+     * @param Builder $source
      */
-    public function __construct(QueryBuilder $source)
+    public function __construct(Builder $source)
     {
         $this->original = $source;
         $this->source = clone $source;
@@ -40,22 +40,34 @@ class EloquentEngine implements Engine
     /**
      * @inheritdoc
      */
-    protected function qualifyColumn($query, $column)
+    protected function qualifyColumn($query, $name)
     {
-        return $query->qualifyColumn($column);
+        return $query->qualifyColumn($name);
+    }
+
+    /**
+     * Qualify the given column name by the pivot table.
+     *
+     * @param mixed $query
+     * @param string $name Column name
+     * @return string
+     */
+    protected function qualifyPivotColumn($name)
+    {
+        return $this->source->qualifyPivotColumn($name);
     }
 
     /**
      * @inheritdoc
      */
-    protected function search($query, $column, $value, $regex, $boolean = 'or')
+    protected function search($query, $name, $value, $regex, $boolean = 'or')
     {
-        $model = $query->getModel();
-
-        if ($this->isRelated($model, $column)) {
-            $this->searchRelated($query, $column, $value, $regex, $boolean);
+        if ($this->isPivot($name)) {
+            $this->searchPivot($query, $name, $value, $regex, $boolean);
+        } elseif ($this->isRelated($query->getModel(), $name)) {
+            $this->searchRelated($query, $name, $value, $regex, $boolean);
         } else {
-            $this->traitSearch($query, $column, $value, $regex, $boolean);
+            $this->traitSearch($query, $name, $value, $regex, $boolean);
         }
     }
 
@@ -63,31 +75,53 @@ class EloquentEngine implements Engine
      * Searches for the related column.
      *
      * @param mixed  $query
-     * @param string $column Column name
+     * @param string $name Column name
      * @param string $value
      * @param bool   $regex
      * @param string $boolean
      */
-    protected function searchRelated($query, $column, $value, $regex, $boolean = 'or')
+    protected function searchRelated($query, $name, $value, $regex, $boolean = 'or')
     {
-        list($relation, $column) = explode('.', $column, 2);
+        list($relation, $name) = explode('.', $name, 2);
 
-        $query->has($relation, '>=', 1, $boolean, function ($query) use ($column, $value, $regex) {
-            $this->search($query, $column, $value, $regex, 'and');
+        $query->has($relation, '>=', 1, $boolean, function ($q) use ($name, $value, $regex) {
+            $this->search($q, $name, $value, $regex, 'and');
         });
+    }
+
+    /**
+     * Searches for the pivot column.
+     *
+     * @param mixed  $query
+     * @param string $name Column name
+     * @param string $value
+     * @param bool   $regex
+     * @param string $boolean
+     */
+    protected function searchPivot($query, $name, $value, $regex, $boolean = 'or')
+    {
+        list(, $name) = explode('.', $name, 2);
+
+        $name = $this->qualifyPivotColumn($name);
+
+        if ($regex) {
+            $query->where($name, 'REGEXP', $value, $boolean);
+        } else {
+            $query->where($name, 'LIKE', "%{$value}%", $boolean);
+        }
     }
 
     /**
      * @inheritdoc
      */
-    protected function order($query, $column, $dir)
+    protected function order($query, $name, $dir)
     {
-        $model = $query->getModel();
-
-        if ($this->isRelated($model, $column)) {
-            $this->orderRelated($query, $column, $dir);
+        if ($this->isPivot($name)) {
+            $this->orderPivot($query, $name, $dir);
+        } elseif ($this->isRelated($query->getModel(), $name)) {
+            $this->orderRelated($query, $name, $dir);
         } else {
-            $this->traitOrder($query, $column, $dir);
+            $this->traitOrder($query, $name, $dir);
         }
     }
 
@@ -95,16 +129,16 @@ class EloquentEngine implements Engine
      * Orders the related column.
      *
      * @param mixed  $query
-     * @param string $column Column name
+     * @param string $name Column name
      * @param string $dir
      */
-    protected function orderRelated($query, $column, $dir)
+    protected function orderRelated($query, $name, $dir)
     {
         $model = $query->getModel();
 
         order:
 
-        list($relation, $column) = explode('.', $column, 2);
+        list($relation, $name) = explode('.', $name, 2);
 
         $relation = $model->{$relation}();
 
@@ -112,11 +146,35 @@ class EloquentEngine implements Engine
 
         $model = $relation->getRelated();
 
-        if ($this->isRelated($model, $column)) {
+        if ($this->isRelated($model, $name)) {
             goto order;
         } else {
-            $query->orderBy($model->qualifyColumn($this->resolveJsonColumn($column)), $dir);
+            $query->orderBy($this->qualifyJoinColumn($model, $this->resolveJsonColumn($name)), $dir);
         }
+    }
+
+    protected function getJoinAlias($model)
+    {
+        return "{$model->getTable()}_join";
+    }
+
+    protected function qualifyJoinColumn($model, $name)
+    {
+        return "{$this->getJoinAlias($model)}.{$name}";
+    }
+
+    /**
+     * Orders the pivot column.
+     *
+     * @param mixed  $query
+     * @param string $name Column name
+     * @param string $dir
+     */
+    protected function orderPivot($query, $name, $dir)
+    {
+        list(, $name) = explode('.', $name, 2);
+
+        $query->orderBy($this->qualifyPivotColumn($name), $dir);
     }
 
     /**
@@ -144,33 +202,36 @@ class EloquentEngine implements Engine
     {
         switch (true) {
             case $model instanceof BelongsToMany:
-                $pivot = $model->getTable();
+                $pivotTb = $model->getTable();
                 $pivotPk = $model->getExistenceCompareKey();
                 $pivotFk = $model->getQualifiedParentKeyName();
-                $this->join($query, $pivot, $pivotPk, $pivotFk);
+                $this->join($query, $pivotTb, $pivotPk, $pivotFk);
 
                 $related = $model->getRelated();
                 $table = $related->getTable();
-                $foreign = sprintf('%s.%s', $pivot, $related->getForeignKey());
-                $other = $related->getQualifiedKeyName();
+                $alias = $this->getJoinAlias($related);
+                $foreign = sprintf('%s.%s', $pivotTb, $related->getForeignKey());
+                $other = $this->qualifyJoinColumn($related, $related->getKeyName());
                 $softDeletes = $this->checkSoftDeletes($related);
-                $this->join($query, $table, $foreign, $other, $softDeletes);
+                $this->join($query, "$table as $alias", $foreign, $other, $softDeletes);
                 break;
             case $model instanceof HasOneOrMany:
                 $related = $model->getRelated();
                 $table = $related->getTable();
-                $foreign = $model->getQualifiedForeignKeyName();
+                $alias = $this->getJoinAlias($related);
+                $foreign = $this->qualifyJoinColumn($related, $model->getForeignKeyName());
                 $other = $model->getQualifiedParentKeyName();
                 $softDeletes = $this->checkSoftDeletes($related);
-                $this->join($query, $table, $foreign, $other, $softDeletes);
+                $this->join($query, "$table as $alias", $foreign, $other, $softDeletes);
                 break;
             case $model instanceof BelongsTo:
                 $related = $model->getRelated();
                 $table = $related->getTable();
+                $alias = $this->getJoinAlias($related);
                 $foreign = $model->getQualifiedForeignKeyName();
-                $other = $model->getQualifiedOwnerKeyName();
+                $other = $this->qualifyJoinColumn($related, $model->getOwnerKeyName());
                 $softDeletes = $this->checkSoftDeletes($related);
-                $this->join($query, $table, $foreign, $other, $softDeletes);
+                $this->join($query, "$table as $alias", $foreign, $other, $softDeletes);
                 break;
             default:
                 throw new RuntimeException('Relation ['.get_class($model).'] is not yet supported.');
@@ -206,15 +267,32 @@ class EloquentEngine implements Engine
      * Indicates if the column is for a relationship.
      *
      * @param Model $model
-     * @param string $column
+     * @param string $name Column name
      * @return bool
      */
-    protected function isRelated(Model $model, $column)
+    protected function isRelated(Model $model, $name)
     {
-        list($relation,) = explode('.', $column);
+        list($relation,) = explode('.', $name);
 
         if (method_exists($model, $relation)) {
             return $model->{$relation}() instanceof Relation;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Indicates if the column is for a pivot accessor.
+     *
+     * @param string $name Column name
+     * @return bool
+     */
+    protected function isPivot($name)
+    {
+        list($accessor,) = explode('.', $name);
+
+        if ($this->source instanceof BelongsToMany) {
+            return $accessor === $this->source->getPivotAccessor();
         } else {
             return false;
         }

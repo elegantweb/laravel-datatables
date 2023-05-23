@@ -34,10 +34,10 @@ trait InteractsWithQueryBuilder
      * Qualify the given column name by the table.
      *
      * @param mixed $query
-     * @param string $column
+     * @param string $name Column name
      * @return string
      */
-    abstract protected function qualifyColumn($query, $column);
+    abstract protected function qualifyColumn($query, $name);
 
     /**
      * @inheritdoc

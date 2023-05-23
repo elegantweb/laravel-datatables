@@ -17,6 +17,11 @@ class EloquentTest extends DataTableTest
         return Post::query();
     }
 
+    protected function getCategorySource()
+    {
+        return Category::query();
+    }
+
     protected function createPost(array $attributes = [])
     {
         return Post::factory()->create($attributes);
@@ -50,7 +55,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'user.name'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('user');
@@ -91,7 +95,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'posts.0.title', 'name' => 'posts.title', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getUserSource()->with('posts');
@@ -129,7 +132,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'user.name', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('user');
@@ -170,7 +172,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('categories');
@@ -210,7 +211,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'posts.0.title', 'name' => 'posts.title', 'searchable' => 'true', 'search' => ['value' => 'First of Beta', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getUserSource()->with('posts');
@@ -247,7 +247,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'user.name', 'searchable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('user');
@@ -287,7 +286,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'categories.0.label', 'name' => 'categories.label', 'searchable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('categories');
@@ -330,7 +328,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'posts.0.created_at', 'name' => 'posts.created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getUserSource()->with('posts');
@@ -377,7 +374,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'user.created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('user');
@@ -428,7 +424,6 @@ class EloquentTest extends DataTableTest
                 ['data' => 'categories.0.label', 'name' => 'categories.label', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $source = $this->getPostSource()->with('categories');
@@ -436,6 +431,189 @@ class EloquentTest extends DataTableTest
         $dataTable = DataTables::make($source)->build();
 
         $posts = $posts->sortBy('categories.0.label', SORT_REGULAR, $dir === 'desc')->values();
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 3,
+            "recordsFiltered" => 3,
+            'data' => $posts->toArray(),
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
+        );
+    }
+
+    /**
+     * @dataProvider sort_direction_provider
+     */
+    public function test_can_sort_heraldry_relations($dir)
+    {
+        $category1 = $this->createCategory(['label' => 'Alpha', 'parent_id' => null]);
+        $category2 = $this->createCategory(['label' => 'Alpha Alpha', 'parent_id' => $category1->id]);
+        $category3 = $this->createCategory(['label' => 'Alpha Beta', 'parent_id' => $category1->id]);
+        $category4 = $this->createCategory(['label' => 'Alpha Gamma', 'parent_id' => $category1->id]);
+
+        $categories = collect();
+        $categories[] = $category1;
+        $categories[] = $category2;
+        $categories[] = $category3;
+        $categories[] = $category4;
+
+        $categories->each->load('parent');
+
+        $request = [
+            'draw' => '1000',
+            'order' => [
+                ['column' => '0', 'dir' => $dir],
+            ],
+            'columns' => [
+                ['data' => 'parent.label', 'orderable' => 'true'],
+            ],
+        ];
+        request()->replace($request);
+
+        $source = $this->getCategorySource()->with('parent');
+
+        $dataTable = DataTables::make($source)->build();
+
+        $categories = $categories->sortBy('parent.label', SORT_REGULAR, $dir === 'desc')->values();
+
+        // let's fill requested but undefined columns
+        $expectedData = $categories->toArray();
+        foreach ($expectedData as &$category) {
+            $category['parent'] ??= ['label' => ''];
+        }
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 4,
+            "recordsFiltered" => 4,
+            'data' => $expectedData,
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
+        );
+    }
+
+    public function test_can_filter_pivot_columns_using_global_search()
+    {
+        $post1 = $this->createPost();
+        $post2 = $this->createPost();
+        $post3 = $this->createPost();
+
+        $category = $this->createCategory(['label' => 'Alpha']);
+
+        $category->posts()->attach($post1->id, ['position' => 111]);
+        $category->posts()->attach($post2->id, ['position' => 222]);
+        $category->posts()->attach($post3->id, ['position' => 333]);
+
+        $category->load('posts');
+
+        $request = [
+            'draw' => '1000',
+            'search' => ['value' => '333', 'regex' => 'false'],
+            'columns' => [
+                ['data' => 'pivot.position', 'searchable' => 'true'],
+            ],
+        ];
+        request()->replace($request);
+
+        $source = $category->posts();
+
+        $dataTable = DataTables::make($source)->build();
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 3,
+            "recordsFiltered" => 1,
+            'data' => $category->posts->only([3])->toArray(),
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
+        );
+    }
+
+    public function test_can_filter_pivot_columns_using_column_search()
+    {
+        $post1 = $this->createPost();
+        $post2 = $this->createPost();
+        $post3 = $this->createPost();
+
+        $category = $this->createCategory(['label' => 'Alpha']);
+
+        $category->posts()->attach($post1->id, ['position' => 111]);
+        $category->posts()->attach($post2->id, ['position' => 222]);
+        $category->posts()->attach($post3->id, ['position' => 333]);
+
+        $category->load('posts');
+
+        $request = [
+            'draw' => '1000',
+            'search' => ['value' => '333', 'regex' => 'false'],
+            'columns' => [
+                ['data' => 'pivot.position', 'searchable' => 'true', 'search' => ['value' => '333', 'regex' => 'false']],
+            ],
+        ];
+        request()->replace($request);
+
+        $source = $category->posts();
+
+        $dataTable = DataTables::make($source)->build();
+
+        $expected = [
+            'draw' => 1000,
+            "recordsTotal" => 3,
+            "recordsFiltered" => 1,
+            'data' => $category->posts->only([3])->toArray(),
+        ];
+
+        $this->assertEquals(
+            $expected,
+            $dataTable->toArray(),
+        );
+    }
+
+    /**
+     * @dataProvider sort_direction_provider
+     */
+    public function test_can_sort_pivot_columns($dir)
+    {
+        $post1 = $this->createPost();
+        $post2 = $this->createPost();
+        $post3 = $this->createPost();
+
+        $category = $this->createCategory(['label' => 'Alpha']);
+
+        $category->posts()->attach($post1->id, ['position' => 1]);
+        $category->posts()->attach($post2->id, ['position' => 2]);
+        $category->posts()->attach($post3->id, ['position' => 3]);
+
+        $category->load('posts');
+
+        $posts = $category->posts;
+
+        $request = [
+            'draw' => '1000',
+            'order' => [
+                ['column' => '0', 'dir' => $dir],
+            ],
+            'columns' => [
+                ['data' => 'pivot.position', 'orderable' => 'true'],
+            ],
+        ];
+        request()->replace($request);
+
+        $source = $category->posts();
+
+        $dataTable = DataTables::make($source)->build();
+
+        $posts = $posts->sortBy('pivot.position', SORT_REGULAR, $dir === 'desc')->values();
 
         $expected = [
             'draw' => 1000,

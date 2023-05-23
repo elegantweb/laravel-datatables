@@ -86,7 +86,7 @@ class DataTablesServiceProvider extends ServiceProvider
         });
 
         $factory->extend(Relation::class, function ($source) {
-            return new EloquentEngine($source->getQuery());
+            return new EloquentEngine($source);
         });
     }
 

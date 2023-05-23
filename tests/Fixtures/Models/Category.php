@@ -11,8 +11,14 @@ class Category extends Model
 
     public $timestamps = false;
 
+    public function parent()
+    {
+        return $this->belongsTo(self::class);
+    }
+
     public function posts()
     {
-        return $this->belongsToMany(Post::class);
+        return $this->belongsToMany(Post::class)
+                    ->withPivot(['position']);
     }
 }

@@ -16,6 +16,7 @@ class CreateCategoryPostTable extends Migration
         Schema::create('category_post', function (Blueprint $table) {
             $table->bigInteger('category_id')->unsigned();
             $table->bigInteger('post_id')->unsigned();
+            $table->integer('position')->unsigned()->nullable();
             $table->primary(['category_id', 'post_id']);
         });
     }

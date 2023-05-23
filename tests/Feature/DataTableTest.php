@@ -3,13 +3,18 @@
 namespace Elegant\DataTables\Tests\Feature;
 
 use Elegant\DataTables\Support\Facades\DataTables;
+use Elegant\DataTables\Tests\Fixtures\TestProcessor;
 use Elegant\DataTables\Tests\TestCase;
 
 abstract class DataTableTest extends TestCase
 {
     abstract protected function getPostSource();
 
+    abstract protected function getCategorySource();
+
     abstract protected function createPost();
+
+    abstract protected function createCategory();
 
     public function test_can_make_simple_table()
     {
@@ -19,7 +24,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -53,7 +57,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -85,7 +88,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -116,7 +118,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Second', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -147,7 +148,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'title', 'searchable' => 'false', 'search' => ['value' => 'Second', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -192,7 +192,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -231,7 +230,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'false'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -271,7 +269,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -307,7 +304,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -341,7 +337,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -379,7 +374,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -413,7 +407,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -446,7 +439,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -479,7 +471,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true', 'search' => ['value' => 'Alpha', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -515,7 +506,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -554,7 +544,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())
@@ -588,7 +577,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'title', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -627,7 +615,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -660,7 +647,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -697,7 +683,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -735,7 +720,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -770,7 +754,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'content', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -809,7 +792,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'created_at', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -846,7 +828,6 @@ abstract class DataTableTest extends TestCase
             'start' => '2',
             'length' => '2',
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -872,7 +853,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -895,7 +875,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -918,7 +897,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $dataTable = DataTables::make($this->getPostSource())->build();
@@ -937,7 +915,6 @@ abstract class DataTableTest extends TestCase
         $request = [
             'draw' => '1000',
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -985,7 +962,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'custom', 'name' => 'title', 'searchable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -1024,7 +1000,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'custom', 'name' => 'title', 'searchable' => 'true', 'search' => ['value' => 'Beta', 'regex' => 'false']],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());
@@ -1070,7 +1045,6 @@ abstract class DataTableTest extends TestCase
                 ['data' => 'custom', 'name' => 'title', 'orderable' => 'true'],
             ],
         ];
-
         request()->replace($request);
 
         $builder = DataTables::make($this->getPostSource());

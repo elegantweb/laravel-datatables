@@ -12,7 +12,7 @@ class Helper
      * @param mixed $data
      * @param array $param
      * @param bool $escape
-     * @return mixed
+     * @return string
      */
     public static function resolveData($data, array $params = [], $escape = true)
     {
@@ -37,7 +37,7 @@ class Helper
      *
      * @param mixed $data
      * @param array $param
-     * @return mixed
+     * @return string
      */
     public static function resolveBladeData($data, array $params = [])
     {
@@ -48,7 +48,7 @@ class Helper
         $data = ob_get_contents();
         ob_end_clean();
 
-        return $data;
+        return $data ?: '';
     }
 
     /**

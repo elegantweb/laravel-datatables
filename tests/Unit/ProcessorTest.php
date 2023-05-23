@@ -7,7 +7,7 @@ use Elegant\DataTables\Tests\TestCase;
 
 class ProcessorTest extends TestCase
 {
-    public function test_adds_undefined_requested_column()
+    public function test_adds_undefined_but_requested_column()
     {
         $records = [
             [

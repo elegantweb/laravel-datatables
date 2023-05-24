@@ -23,7 +23,7 @@ class EloquentEngine implements Engine
     /**
      * @param Builder $source
      */
-    public function __construct(Builder $source)
+    public function __construct($source)
     {
         $this->original = $source;
         $this->source = clone $source;

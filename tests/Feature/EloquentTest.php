@@ -450,16 +450,21 @@ class EloquentTest extends DataTableTest
      */
     public function test_can_sort_heraldry_relations($dir)
     {
-        $category1 = $this->createCategory(['label' => 'Alpha', 'parent_id' => null]);
-        $category2 = $this->createCategory(['label' => 'Alpha Alpha', 'parent_id' => $category1->id]);
-        $category3 = $this->createCategory(['label' => 'Alpha Beta', 'parent_id' => $category1->id]);
-        $category4 = $this->createCategory(['label' => 'Alpha Gamma', 'parent_id' => $category1->id]);
+        $parent1 = $this->createCategory(['label' => 'Parent Alpha', 'parent_id' => null]);
+        $parent2 = $this->createCategory(['label' => 'Parent Beta', 'parent_id' => null]);
+        $parent3 = $this->createCategory(['label' => 'Parent Gamma', 'parent_id' => null]);
+
+        $child1 = $this->createCategory(['label' => 'Child Alpha', 'parent_id' => $parent1->id]);
+        $child2 = $this->createCategory(['label' => 'Child Beta', 'parent_id' => $parent2->id]);
+        $child3 = $this->createCategory(['label' => 'Child Gamma', 'parent_id' => $parent3->id]);
 
         $categories = collect();
-        $categories[] = $category1;
-        $categories[] = $category2;
-        $categories[] = $category3;
-        $categories[] = $category4;
+        $categories[] = $parent1;
+        $categories[] = $parent2;
+        $categories[] = $parent3;
+        $categories[] = $child1;
+        $categories[] = $child2;
+        $categories[] = $child3;
 
         $categories->each->load('parent');
 
@@ -478,18 +483,18 @@ class EloquentTest extends DataTableTest
 
         $dataTable = DataTables::make($source)->build();
 
-        $categories = $categories->sortBy('parent.label', SORT_REGULAR, $dir === 'desc')->values();
+        $children = $categories->sortBy('parent.label', SORT_REGULAR, $dir === 'desc')->values();
 
         // let's fill requested but undefined columns
-        $expectedData = $categories->toArray();
+        $expectedData = $children->toArray();
         foreach ($expectedData as &$category) {
             $category['parent'] ??= ['label' => ''];
         }
 
         $expected = [
             'draw' => 1000,
-            "recordsTotal" => 4,
-            "recordsFiltered" => 4,
+            "recordsTotal" => 6,
+            "recordsFiltered" => 6,
             'data' => $expectedData,
         ];
 

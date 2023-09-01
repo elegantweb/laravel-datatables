@@ -109,14 +109,26 @@ class Processor implements ProcessorContract
     }
 
     /**
-     * Indicates if the column should be escaped.
+     * Indicates if the column is a raw column, raw columns should be inacted in either way.
      *
      * @param string $name
      * @return bool
      */
-    protected function shouldEscapeColumn($name)
+    protected function isColumnRaw($name)
     {
         return !in_array($name, $this->raw);
+    }
+
+    /**
+     * Indicates if the column should be escaped.
+     *
+     * @param string $name
+     * @param mixed $value
+     * @return bool
+     */
+    protected function shouldEscapeColumn($name, $value)
+    {
+        return is_string($value) && $this->isColumnRaw($name);
     }
 
     /**
@@ -131,7 +143,7 @@ class Processor implements ProcessorContract
 
         foreach ($columns as $name => $value) {
             if ($this->isColumnRequired($name)) {
-                Arr::set($row, $name, $this->shouldEscapeColumn($name) ? e($value) : $value);
+                Arr::set($row, $name, $this->shouldEscapeColumn($name, $value) ? e($value) : $value);
             }
         }
     }
@@ -146,7 +158,7 @@ class Processor implements ProcessorContract
     {
         foreach ($this->addon as $name => $data) {
             if ($this->isColumnRequired($name)) {
-                Arr::set($row, $name, Helper::resolveData($data, compact('record'), $this->shouldEscapeColumn($name)));
+                Arr::set($row, $name, Helper::resolveData($data, compact('record'), $this->isColumnRaw($name)));
             }
         }
     }

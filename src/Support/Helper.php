@@ -20,12 +20,12 @@ class Helper
             // NOTE: $params does include keys and variable names, but for methods, we don't want to use PHP 8 named arguments, so we just use array_values to fix the problem
             $data = call_user_func_array($data, array_values($params));
         }
-        // No need to escape blade data, so just return the content
         else {
+            // No need to escape blade data, so just return the content
             return static::resolveBladeData($data, $params);
         }
 
-        if ($escape) {
+        if ($escape and is_string($data)) {
             return e($data);
         } else {
             return $data;

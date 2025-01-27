@@ -3,10 +3,10 @@
 namespace Elegant\DataTables\Tests\Feature;
 
 use Elegant\DataTables\Support\Facades\DataTables;
-use Elegant\DataTables\Tests\Fixtures\TestProcessor;
 use Elegant\DataTables\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-abstract class DataTableTest extends TestCase
+abstract class DataTableTesting extends TestCase
 {
     abstract protected function getPostSource();
 
@@ -165,7 +165,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    public function sort_direction_provider()
+    public static function sort_direction_provider()
     {
         return [
             ['asc'],
@@ -173,9 +173,7 @@ abstract class DataTableTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_columns($dir)
     {
         $posts = collect();
@@ -211,9 +209,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_applies_sort_to_only_orderable_columns($dir)
     {
         $posts = collect();
@@ -247,9 +243,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_multiple_columns($dir)
     {
         $posts = [];
@@ -525,9 +519,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_does_not_sort_blacklisted_columns($dir)
     {
         $posts = collect();
@@ -596,9 +588,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_does_not_sort_when_default_sorting_is_disabled($dir)
     {
         $posts = collect();
@@ -1026,9 +1016,7 @@ abstract class DataTableTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_custom_column_by_name($dir)
     {
         $posts = collect();

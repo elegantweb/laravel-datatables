@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Elegant\DataTables\Tests\Fixtures\Models\Post;
 use Elegant\DataTables\Tests\Fixtures\Models\Category;
 
-class QueryTest extends DataTableTest
+class QueryTest extends DataTableTesting
 {
     use RefreshDatabase;
 

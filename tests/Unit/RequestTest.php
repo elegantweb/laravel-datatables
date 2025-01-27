@@ -5,6 +5,7 @@ namespace Elegant\DataTables\Tests\Unit;
 use Elegant\DataTables\Request;
 use Elegant\DataTables\Tests\TestCase;
 use Illuminate\Http\Request as HttpRequest;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RequestTest extends TestCase
 {
@@ -13,7 +14,7 @@ class RequestTest extends TestCase
         return HttpRequest::create('/', 'GET', $params);
     }
 
-    public function draw_value_data_provider()
+    public static function draw_value_data_provider()
     {
         return [
             'valid' => ['1000', 1000],
@@ -22,9 +23,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider draw_value_data_provider
-     */
+    #[DataProvider('draw_value_data_provider')]
     public function test_can_detect_draw_value($draw, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['draw' => $draw]);
@@ -34,7 +33,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->draw());
     }
 
-    public function start_point_data_provider()
+    public static function start_point_data_provider()
     {
         return [
             'valid' => ['1000', 1000],
@@ -44,9 +43,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider start_point_data_provider
-     */
+    #[DataProvider('start_point_data_provider')]
     public function test_can_detect_start_point($start, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['start' => $start]);
@@ -56,7 +53,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->start());
     }
 
-    public function length_number_data_provider()
+    public static function length_number_data_provider()
     {
         return [
             'valid' => ['1000', 1000],
@@ -67,9 +64,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider length_number_data_provider
-     */
+    #[DataProvider('length_number_data_provider')]
     public function test_can_detect_length_number($length, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['length' => $length]);
@@ -79,7 +74,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->length());
     }
 
-    public function real_length_number_data_provider()
+    public static function real_length_number_data_provider()
     {
         return [
             'valid' => ['1000', 1000],
@@ -90,9 +85,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider real_length_number_data_provider
-     */
+    #[DataProvider('real_length_number_data_provider')]
     public function test_can_detect_real_length_number($length, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['length' => $length]);
@@ -102,7 +95,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->realLength());
     }
 
-    public function paging_status_data_provider()
+    public static function paging_status_data_provider()
     {
         return [
             [['start' => '0', 'length' => '10'], true],
@@ -114,9 +107,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider paging_status_data_provider
-     */
+    #[DataProvider('paging_status_data_provider')]
     public function test_can_indicate_paging_status(array $params, $expected)
     {
         $httpRequest = $this->cerateHttpRequest($params);
@@ -126,7 +117,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->hasPaging());
     }
 
-    public function global_search_data_provider()
+    public static function global_search_data_provider()
     {
         return [
             'valid normal' => [['value' => 'match', 'regex' => 'false'], ['value' => 'match', 'regex' => false]],
@@ -138,9 +129,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider global_search_data_provider
-     */
+    #[DataProvider('global_search_data_provider')]
     public function test_can_detect_global_search($search, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['search' => $search]);
@@ -150,7 +139,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->search());
     }
 
-    public function global_search_status_data_provider()
+    public static function global_search_status_data_provider()
     {
         return [
             'valid normal' => [['value' => 'match', 'regex' => 'false'], true],
@@ -162,9 +151,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider global_search_status_data_provider
-     */
+    #[DataProvider('global_search_status_data_provider')]
     public function test_can_detect_global_search_status($search, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['search' => $search]);
@@ -174,7 +161,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->hasSearch());
     }
 
-    public function order_data_provider()
+    public static function order_data_provider()
     {
         return [
             'valid asc' => [[['column' => '1', 'dir' => 'asc']], [['column' => '1', 'dir' => 'asc']]],
@@ -189,9 +176,7 @@ class RequestTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider order_data_provider
-     */
+    #[DataProvider('order_data_provider')]
     public function test_can_detect_order($order, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(['order' => $order]);
@@ -201,7 +186,7 @@ class RequestTest extends TestCase
         $this->assertEquals($expected, $request->order());
     }
 
-    public function columns_data_provider()
+    public static function columns_data_provider()
     {
         $data = [];
 
@@ -256,9 +241,7 @@ class RequestTest extends TestCase
         return $data;
     }
 
-    /**
-     * @dataProvider columns_data_provider
-     */
+    #[DataProvider('columns_data_provider')]
     public function test_cen_detect_columns($order, $columns, $expected)
     {
         $httpRequest = $this->cerateHttpRequest(compact('order', 'columns'));

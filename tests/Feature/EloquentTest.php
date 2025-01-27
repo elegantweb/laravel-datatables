@@ -7,8 +7,9 @@ use Elegant\DataTables\Tests\Fixtures\Models\Post;
 use Elegant\DataTables\Tests\Fixtures\Models\User;
 use Elegant\DataTables\Tests\Fixtures\Models\Category;
 use Elegant\DataTables\Support\Facades\DataTables;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-class EloquentTest extends DataTableTest
+class EloquentTest extends DataTableTesting
 {
     use RefreshDatabase;
 
@@ -305,9 +306,7 @@ class EloquentTest extends DataTableTest
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_has_many_relation_columns($dir)
     {
         $users = collect();
@@ -349,9 +348,7 @@ class EloquentTest extends DataTableTest
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_belongs_to_relation_columns($dir)
     {
         $user1 = $this->createUser(['created_at' => '2000-01-01']);
@@ -395,9 +392,7 @@ class EloquentTest extends DataTableTest
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_belongs_to_many_relation_columns($dir)
     {
         $category1 = $this->createCategory(['label' => 'Alpha']);
@@ -445,9 +440,7 @@ class EloquentTest extends DataTableTest
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_heraldry_relations($dir)
     {
         $parent1 = $this->createCategory(['label' => 'Parent Alpha', 'parent_id' => null]);
@@ -584,9 +577,7 @@ class EloquentTest extends DataTableTest
         );
     }
 
-    /**
-     * @dataProvider sort_direction_provider
-     */
+    #[DataProvider('sort_direction_provider')]
     public function test_can_sort_pivot_columns($dir)
     {
         $post1 = $this->createPost();
